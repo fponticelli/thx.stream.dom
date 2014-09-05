@@ -1,0 +1,16 @@
+{
+  "name": "thx.stream.dom",
+  "url": "https://github.com/fponticelli/thx.stream.dom",
+  "license": "MIT",
+  "classPath": "src",
+  "tags": ["thx", "stream", "async", "javascript"],
+  "description": "DOM Streams for Haxe",
+  "releasenote": "first release",
+  "version": "0.1.0",
+  "contributors": ["fponticelli"],
+  "dependencies": {
+    "thx.core": "",
+    "thx.promise": "",
+    "thx.stream": ""
+  }
+}

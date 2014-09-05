@@ -1,0 +1,7 @@
+-cp src
+-cp demo
+-lib thx.core
+-lib thx.promise
+-lib thx.stream
+-main Demo
+-js bin/demo.js
