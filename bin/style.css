@@ -1,0 +1,29 @@
+#container {
+    width: 960px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+pre {
+    font-size: 0.7em;
+    background-color: #f0f0f0;
+    padding: 0.5em;
+    white-space: pre;
+}
+
+.panel {
+    width: 470px;
+    display: inline-block;
+    text-align: left;
+    vertical-align: top;
+    margin: 0 5px;
+}
+
+.output {
+    background-color: #bbffcc;
+    padding: 0.5em 1em;
+    min-height: 1em;
+    margin-top: 0.75em;
+    font-family: monospace;
+    border-radius: 8px;
+}
