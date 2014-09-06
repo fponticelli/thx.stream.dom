@@ -58,6 +58,9 @@ class Dom {
     return function(on) if(on) el.removeAttribute(name) else el.setAttribute(name, cast value);
   }
 
+  public static function subscribeToggleClass(el : Element, name : String) : Bool -> Void
+    return function(on) if(on) el.classList.remove(name) else el.classList.add(name);
+
   public static function subscribeToggleVisibility(el : Element) : Bool -> Void {
     var originalDisplay = el.style.display;
     if(originalDisplay == 'none')
