@@ -1,10 +1,20 @@
 package thx.stream.dom;
 
 using StringTools;
+using thx.core.Nil;
 using thx.stream.Emitter;
+using thx.promise.Promise;
 import js.html.*;
 
 class Dom {
+  public static function ready() : Promise<Nil> {
+    return Promise.create(function(resolve, _) {
+      js.Browser.document.addEventListener("DOMContentLoaded", function(_) {
+        resolve(nil);
+      }, false);
+    });
+  }
+
   public static function streamEvent<TEvent : Event>(el : Element, name : String, capture = false) : Emitter<TEvent>
     return Emitter.create(function(stream) {
       el.addEventListener(name, stream.pulse, capture);
