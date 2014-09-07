@@ -1,5 +1,4 @@
 (function () { "use strict";
-var $estr = function() { return js.Boot.__string_rec(this,''); };
 function $extend(from, fields) {
 	function Inherit() {} Inherit.prototype = from; var proto = new Inherit();
 	for (var name in fields) proto[name] = fields[name];
@@ -46,12 +45,31 @@ Demo.replicate = function(demo) {
 		return s.toUpperCase();
 	}).subscribe(thx.stream.dom.Dom.subscribeText(output));
 };
+Demo.draw = function(demo) {
+	var el = demo.panel("draw canvas","canvas.streamMouseEvent(\"mousemove\")\n  .window(2)\n  .pair(canvas\n    .streamMouseEvent(\"mousedown\").toTrue()\n    .merge(canvas.streamMouseEvent(\"mouseup\").toFalse()))\n  .filterValue(function(t) return t._1)\n  .mapValue(function(t) return t._0)\n  .subscribe(function(e) {\n    ctx.beginPath();\n    ctx.moveTo(e[0].offsetX, e[0].offsetY);\n    ctx.lineTo(e[1].offsetX, e[1].offsetY);\n    ctx.stroke();\n  });");
+	var canvas = demo.canvas(470,300,el);
+	var ctx = canvas.getContext("2d");
+	ctx.lineWidth = 4;
+	ctx.setStrokeColor("#345");
+	ctx.lineCap = "round";
+	thx.stream.dom.Dom.streamEvent(canvas,"mousemove",false).window(2).pair(thx.stream.dom.Dom.streamEvent(canvas,"mousedown",false).toTrue().merge(thx.stream.dom.Dom.streamEvent(canvas,"mouseup",false).toFalse())).filterValue(function(t) {
+		return t._1;
+	}).mapValue(function(t1) {
+		return t1._0;
+	}).subscribe(function(e) {
+		ctx.beginPath();
+		ctx.moveTo(e[0].offsetX,e[0].offsetY);
+		ctx.lineTo(e[1].offsetX,e[1].offsetY);
+		ctx.stroke();
+	});
+};
 Demo.main = function() {
 	var demo = new Demo(window.document.getElementById("container"));
 	Demo.mouseMove(demo);
 	Demo.click(demo);
 	Demo.plusMinus(demo);
 	Demo.replicate(demo);
+	Demo.draw(demo);
 };
 Demo.prototype = {
 	panel: function(label,code,container) {
@@ -98,6 +116,15 @@ Demo.prototype = {
 		var _this = window.document;
 		el = _this.createElement("input");
 		if(null != placeholder) el.placeholder = placeholder;
+		this.append(el,container);
+		return el;
+	}
+	,canvas: function(width,height,container) {
+		var el;
+		var _this = window.document;
+		el = _this.createElement("canvas");
+		el.width = width;
+		el.height = height;
 		this.append(el,container);
 		return el;
 	}
@@ -178,12 +205,11 @@ StringTools.startsWith = function(s,start) {
 var haxe = {};
 haxe.StackItem = { __ename__ : true, __constructs__ : ["CFunction","Module","FilePos","Method","LocalFunction"] };
 haxe.StackItem.CFunction = ["CFunction",0];
-haxe.StackItem.CFunction.toString = $estr;
 haxe.StackItem.CFunction.__enum__ = haxe.StackItem;
-haxe.StackItem.Module = function(m) { var $x = ["Module",1,m]; $x.__enum__ = haxe.StackItem; $x.toString = $estr; return $x; };
-haxe.StackItem.FilePos = function(s,file,line) { var $x = ["FilePos",2,s,file,line]; $x.__enum__ = haxe.StackItem; $x.toString = $estr; return $x; };
-haxe.StackItem.Method = function(classname,method) { var $x = ["Method",3,classname,method]; $x.__enum__ = haxe.StackItem; $x.toString = $estr; return $x; };
-haxe.StackItem.LocalFunction = function(v) { var $x = ["LocalFunction",4,v]; $x.__enum__ = haxe.StackItem; $x.toString = $estr; return $x; };
+haxe.StackItem.Module = function(m) { var $x = ["Module",1,m]; $x.__enum__ = haxe.StackItem; return $x; };
+haxe.StackItem.FilePos = function(s,file,line) { var $x = ["FilePos",2,s,file,line]; $x.__enum__ = haxe.StackItem; return $x; };
+haxe.StackItem.Method = function(classname,method) { var $x = ["Method",3,classname,method]; $x.__enum__ = haxe.StackItem; return $x; };
+haxe.StackItem.LocalFunction = function(v) { var $x = ["LocalFunction",4,v]; $x.__enum__ = haxe.StackItem; return $x; };
 haxe.CallStack = function() { };
 haxe.CallStack.__name__ = true;
 haxe.CallStack.callStack = function() {
@@ -236,9 +262,8 @@ haxe.Log.trace = function(v,infos) {
 };
 haxe.ds = {};
 haxe.ds.Option = { __ename__ : true, __constructs__ : ["Some","None"] };
-haxe.ds.Option.Some = function(v) { var $x = ["Some",0,v]; $x.__enum__ = haxe.ds.Option; $x.toString = $estr; return $x; };
+haxe.ds.Option.Some = function(v) { var $x = ["Some",0,v]; $x.__enum__ = haxe.ds.Option; return $x; };
 haxe.ds.Option.None = ["None",1];
-haxe.ds.Option.None.toString = $estr;
 haxe.ds.Option.None.__enum__ = haxe.ds.Option;
 var js = {};
 js.Boot = function() { };
@@ -591,7 +616,6 @@ thx.core.Ints.range = function(start,stop,step) {
 };
 thx.core.Nil = { __ename__ : true, __constructs__ : ["nil"] };
 thx.core.Nil.nil = ["nil",0];
-thx.core.Nil.nil.toString = $estr;
 thx.core.Nil.nil.__enum__ = thx.core.Nil;
 thx.core.Options = function() { };
 thx.core.Options.__name__ = true;
@@ -645,11 +669,11 @@ thx.core.Options.equalsValue = function(a,b,eq) {
 };
 thx.core.Timer = function() { };
 thx.core.Timer.__name__ = true;
-thx.core.Timer.repeat = function(callback,delay) {
-	return setInterval(callback,delay);
+thx.core.Timer.repeat = function(callback,ms) {
+	return setInterval(callback,ms);
 };
-thx.core.Timer.delay = function(callback,delay) {
-	return setTimeout(callback,delay);
+thx.core.Timer.delay = function(callback,ms) {
+	return setTimeout(callback,ms);
 };
 thx.core.Timer.immediate = function(callback) {
 	return setImmediate(callback);
@@ -1211,8 +1235,8 @@ thx.promise.PromiseNil.join = function(p1,p2) {
 	});
 };
 thx.promise.PromiseValue = { __ename__ : true, __constructs__ : ["Failure","Success"] };
-thx.promise.PromiseValue.Failure = function(err) { var $x = ["Failure",0,err]; $x.__enum__ = thx.promise.PromiseValue; $x.toString = $estr; return $x; };
-thx.promise.PromiseValue.Success = function(value) { var $x = ["Success",1,value]; $x.__enum__ = thx.promise.PromiseValue; $x.toString = $estr; return $x; };
+thx.promise.PromiseValue.Failure = function(err) { var $x = ["Failure",0,err]; $x.__enum__ = thx.promise.PromiseValue; return $x; };
+thx.promise.PromiseValue.Success = function(value) { var $x = ["Success",1,value]; $x.__enum__ = thx.promise.PromiseValue; return $x; };
 thx.stream = {};
 thx.stream.Emitter = function(init) {
 	this.init = init;
@@ -1278,6 +1302,16 @@ thx.stream.Emitter.prototype = {
 		this.init(stream);
 		return stream;
 	}
+	,plug: function(bus) {
+		var stream = new thx.stream.Stream(null);
+		stream.subscriber = $bind(bus,bus.emit);
+		bus.upStreams.push(stream);
+		stream.addCleanUp(function() {
+			HxOverrides.remove(bus.upStreams,stream);
+		});
+		this.init(stream);
+		return stream;
+	}
 	,delay: function(time) {
 		var _g = this;
 		return new thx.stream.Emitter(function(stream) {
@@ -1289,6 +1323,42 @@ thx.stream.Emitter.prototype = {
 					return f(id1);
 				};
 			})(thx.core.Timer.clear,id));
+		});
+	}
+	,debounce: function(delay) {
+		var _g = this;
+		return new thx.stream.Emitter(function(stream) {
+			var id = null;
+			stream.addCleanUp(function() {
+				clearTimeout(id);
+			});
+			_g.init(new thx.stream.Stream(function(r) {
+				switch(r[1]) {
+				case 0:
+					var v = r[2];
+					clearTimeout(id);
+					id = thx.core.Timer.delay((function(f,v1) {
+						return function() {
+							return f(v1);
+						};
+					})($bind(stream,stream.pulse),v),delay);
+					break;
+				case 2:
+					var e = r[2];
+					stream.fail(e);
+					break;
+				case 1:
+					switch(r[2]) {
+					case true:
+						stream.cancel();
+						break;
+					case false:
+						setTimeout($bind(stream,stream.end),delay);
+						break;
+					}
+					break;
+				}
+			}));
 		});
 	}
 	,map: function(f) {
@@ -1517,13 +1587,408 @@ thx.stream.Emitter.prototype = {
 			return v1 == expected;
 		});
 	}
+	,distinct: function(equals) {
+		var _g = this;
+		return new thx.stream.Emitter(function(stream) {
+			if(null == equals) equals = function(a,b) {
+				return a == b;
+			};
+			var last = null;
+			_g.init(new thx.stream.Stream(function(r) {
+				switch(r[1]) {
+				case 0:
+					var v = r[2];
+					if(equals(v,last)) return;
+					last = v;
+					stream.pulse(v);
+					break;
+				case 2:
+					var e = r[2];
+					stream.fail(e);
+					break;
+				case 1:
+					switch(r[2]) {
+					case true:
+						stream.cancel();
+						break;
+					case false:
+						stream.end();
+						break;
+					}
+					break;
+				}
+			}));
+		});
+	}
+	,pair: function(other) {
+		var _g = this;
+		return new thx.stream.Emitter(function(stream) {
+			var _0 = null;
+			var _1 = null;
+			stream.addCleanUp(function() {
+				_0 = null;
+				_1 = null;
+			});
+			var pulse = function() {
+				if(null == _0 || null == _1) return;
+				stream.pulse({ _0 : _0, _1 : _1});
+			};
+			_g.init(new thx.stream.Stream(function(r) {
+				switch(r[1]) {
+				case 0:
+					var v = r[2];
+					_0 = v;
+					pulse();
+					break;
+				case 2:
+					var e = r[2];
+					stream.fail(e);
+					break;
+				case 1:
+					switch(r[2]) {
+					case true:
+						stream.cancel();
+						break;
+					case false:
+						stream.end();
+						break;
+					}
+					break;
+				}
+			}));
+			other.init(new thx.stream.Stream(function(r1) {
+				switch(r1[1]) {
+				case 0:
+					var v1 = r1[2];
+					_1 = v1;
+					pulse();
+					break;
+				case 2:
+					var e1 = r1[2];
+					stream.fail(e1);
+					break;
+				case 1:
+					switch(r1[2]) {
+					case true:
+						stream.cancel();
+						break;
+					case false:
+						stream.end();
+						break;
+					}
+					break;
+				}
+			}));
+		});
+	}
+	,zip: function(other) {
+		var _g = this;
+		return new thx.stream.Emitter(function(stream) {
+			var _0 = [];
+			var _1 = [];
+			stream.addCleanUp(function() {
+				_0 = null;
+				_1 = null;
+			});
+			var pulse = function() {
+				if(_0.length == 0 || _1.length == 0) return;
+				stream.pulse((function($this) {
+					var $r;
+					var _01 = _0.shift();
+					var _11 = _1.shift();
+					$r = { _0 : _01, _1 : _11};
+					return $r;
+				}(this)));
+			};
+			_g.init(new thx.stream.Stream(function(r) {
+				switch(r[1]) {
+				case 0:
+					var v = r[2];
+					_0.push(v);
+					pulse();
+					break;
+				case 2:
+					var e = r[2];
+					stream.fail(e);
+					break;
+				case 1:
+					switch(r[2]) {
+					case true:
+						stream.cancel();
+						break;
+					case false:
+						stream.end();
+						break;
+					}
+					break;
+				}
+			}));
+			other.init(new thx.stream.Stream(function(r1) {
+				switch(r1[1]) {
+				case 0:
+					var v1 = r1[2];
+					_1.push(v1);
+					pulse();
+					break;
+				case 2:
+					var e1 = r1[2];
+					stream.fail(e1);
+					break;
+				case 1:
+					switch(r1[2]) {
+					case true:
+						stream.cancel();
+						break;
+					case false:
+						stream.end();
+						break;
+					}
+					break;
+				}
+			}));
+		});
+	}
+	,sampleBy: function(sampler) {
+		var _g = this;
+		return new thx.stream.Emitter(function(stream) {
+			var _0 = null;
+			var _1 = null;
+			stream.addCleanUp(function() {
+				_0 = null;
+				_1 = null;
+			});
+			var pulse = function() {
+				if(null == _0 || null == _1) return;
+				stream.pulse({ _0 : _0, _1 : _1});
+			};
+			_g.init(new thx.stream.Stream(function(r) {
+				switch(r[1]) {
+				case 0:
+					var v = r[2];
+					_0 = v;
+					break;
+				case 2:
+					var e = r[2];
+					stream.fail(e);
+					break;
+				case 1:
+					switch(r[2]) {
+					case true:
+						stream.cancel();
+						break;
+					case false:
+						stream.end();
+						break;
+					}
+					break;
+				}
+			}));
+			sampler.init(new thx.stream.Stream(function(r1) {
+				switch(r1[1]) {
+				case 0:
+					var v1 = r1[2];
+					_1 = v1;
+					pulse();
+					break;
+				case 2:
+					var e1 = r1[2];
+					stream.fail(e1);
+					break;
+				case 1:
+					switch(r1[2]) {
+					case true:
+						stream.cancel();
+						break;
+					case false:
+						stream.end();
+						break;
+					}
+					break;
+				}
+			}));
+		});
+	}
+	,window: function(size,emitWithLess) {
+		if(emitWithLess == null) emitWithLess = false;
+		var _g = this;
+		return new thx.stream.Emitter(function(stream) {
+			var buf = [];
+			var pulse = function() {
+				if(buf.length > size) buf.shift();
+				if(buf.length == size || emitWithLess) stream.pulse(buf.slice());
+			};
+			_g.init(new thx.stream.Stream(function(r) {
+				switch(r[1]) {
+				case 0:
+					var v = r[2];
+					buf.push(v);
+					pulse();
+					break;
+				case 2:
+					var e = r[2];
+					stream.fail(e);
+					break;
+				case 1:
+					switch(r[2]) {
+					case true:
+						stream.cancel();
+						break;
+					case false:
+						stream.end();
+						break;
+					}
+					break;
+				}
+			}));
+		});
+	}
+	,previous: function() {
+		var _g = this;
+		return new thx.stream.Emitter(function(stream) {
+			var value = null;
+			var first = true;
+			var pulse = function() {
+				if(first) {
+					first = false;
+					return;
+				}
+				stream.pulse(value);
+			};
+			_g.init(new thx.stream.Stream(function(r) {
+				switch(r[1]) {
+				case 0:
+					var v = r[2];
+					pulse();
+					value = v;
+					break;
+				case 2:
+					var e = r[2];
+					stream.fail(e);
+					break;
+				case 1:
+					switch(r[2]) {
+					case true:
+						stream.cancel();
+						break;
+					case false:
+						stream.end();
+						break;
+					}
+					break;
+				}
+			}));
+		});
+	}
 	,__class__: thx.stream.Emitter
 };
+thx.stream.Bus = function() {
+	var _g = this;
+	this.downStreams = [];
+	this.upStreams = [];
+	thx.stream.Emitter.call(this,function(stream) {
+		_g.downStreams.push(stream);
+		stream.addCleanUp(function() {
+			HxOverrides.remove(_g.downStreams,stream);
+		});
+	});
+};
+thx.stream.Bus.__name__ = true;
+thx.stream.Bus.__super__ = thx.stream.Emitter;
+thx.stream.Bus.prototype = $extend(thx.stream.Emitter.prototype,{
+	emit: function(value) {
+		switch(value[1]) {
+		case 0:
+			var v = value[2];
+			var _g = 0;
+			var _g1 = this.downStreams.slice();
+			while(_g < _g1.length) {
+				var stream = _g1[_g];
+				++_g;
+				stream.pulse(v);
+			}
+			break;
+		case 2:
+			var e = value[2];
+			var _g2 = 0;
+			var _g11 = this.downStreams.slice();
+			while(_g2 < _g11.length) {
+				var stream1 = _g11[_g2];
+				++_g2;
+				stream1.fail(e);
+			}
+			break;
+		case 1:
+			switch(value[2]) {
+			case true:
+				var _g3 = 0;
+				var _g12 = this.downStreams.slice();
+				while(_g3 < _g12.length) {
+					var stream2 = _g12[_g3];
+					++_g3;
+					stream2.cancel();
+				}
+				break;
+			case false:
+				var _g4 = 0;
+				var _g13 = this.downStreams.slice();
+				while(_g4 < _g13.length) {
+					var stream3 = _g13[_g4];
+					++_g4;
+					stream3.end();
+				}
+				break;
+			}
+			break;
+		}
+	}
+	,pulse: function(value) {
+		this.emit(thx.stream.StreamValue.Pulse(value));
+	}
+	,fail: function(error) {
+		this.emit(thx.stream.StreamValue.Failure(error));
+	}
+	,end: function() {
+		this.emit(thx.stream.StreamValue.End(false));
+	}
+	,cancel: function() {
+		this.emit(thx.stream.StreamValue.End(true));
+	}
+	,clearStreams: function() {
+		var _g = 0;
+		var _g1 = this.downStreams.slice();
+		while(_g < _g1.length) {
+			var stream = _g1[_g];
+			++_g;
+			stream.end();
+		}
+	}
+	,clearEmitters: function() {
+		var _g = 0;
+		var _g1 = this.upStreams.slice();
+		while(_g < _g1.length) {
+			var stream = _g1[_g];
+			++_g;
+			stream.cancel();
+		}
+	}
+	,clear: function() {
+		this.clearEmitters();
+		this.clearStreams();
+	}
+	,__class__: thx.stream.Bus
+});
 thx.stream.EmitterStrings = function() { };
 thx.stream.EmitterStrings.__name__ = true;
 thx.stream.EmitterStrings.toBool = function(emitter) {
 	return emitter.mapValue(function(s) {
 		return s != null && s != "";
+	});
+};
+thx.stream.EmitterInts = function() { };
+thx.stream.EmitterInts.__name__ = true;
+thx.stream.EmitterInts.toBool = function(emitter) {
+	return emitter.mapValue(function(i) {
+		return i != 0;
 	});
 };
 thx.stream.EmitterOptions = function() { };
@@ -1545,6 +2010,23 @@ thx.stream.EmitterOptions.toBool = function(emitter) {
 		return thx.core.Options.toBool(opt);
 	});
 };
+thx.stream.EmitterOptions.either = function(emitter,some,none,fail,end) {
+	if(null == some) some = function(_) {
+	};
+	if(null == none) none = function() {
+	};
+	return emitter.subscribe(function(o) {
+		switch(o[1]) {
+		case 0:
+			var v = o[2];
+			some(v);
+			break;
+		case 1:
+			none;
+			break;
+		}
+	},fail,end);
+};
 thx.stream.Emitters = function() { };
 thx.stream.Emitters.__name__ = true;
 thx.stream.Emitters.skipNull = function(emitter) {
@@ -1562,6 +2044,32 @@ thx.stream.EmitterBools.negate = function(emitter) {
 thx.stream.EmitterEmitters = function() { };
 thx.stream.EmitterEmitters.__name__ = true;
 thx.stream.EmitterEmitters.flatMap = function(emitter) {
+	return new thx.stream.Emitter(function(stream) {
+		emitter.init(new thx.stream.Stream(function(r) {
+			switch(r[1]) {
+			case 0:
+				var em = r[2];
+				em.init(stream);
+				break;
+			case 2:
+				var e = r[2];
+				stream.fail(e);
+				break;
+			case 1:
+				switch(r[2]) {
+				case true:
+					stream.cancel();
+					break;
+				case false:
+					stream.end();
+					break;
+				}
+				break;
+			}
+		}));
+	});
+};
+thx.stream.EmitterEmitters.flatten = function(emitter) {
 	return new thx.stream.Emitter(function(stream) {
 		emitter.init(new thx.stream.Stream(function(r) {
 			switch(r[1]) {
@@ -1640,9 +2148,9 @@ thx.stream.Stream.prototype = {
 	,__class__: thx.stream.Stream
 };
 thx.stream.StreamValue = { __ename__ : true, __constructs__ : ["Pulse","End","Failure"] };
-thx.stream.StreamValue.Pulse = function(value) { var $x = ["Pulse",0,value]; $x.__enum__ = thx.stream.StreamValue; $x.toString = $estr; return $x; };
-thx.stream.StreamValue.End = function(cancel) { var $x = ["End",1,cancel]; $x.__enum__ = thx.stream.StreamValue; $x.toString = $estr; return $x; };
-thx.stream.StreamValue.Failure = function(err) { var $x = ["Failure",2,err]; $x.__enum__ = thx.stream.StreamValue; $x.toString = $estr; return $x; };
+thx.stream.StreamValue.Pulse = function(value) { var $x = ["Pulse",0,value]; $x.__enum__ = thx.stream.StreamValue; return $x; };
+thx.stream.StreamValue.End = function(cancel) { var $x = ["End",1,cancel]; $x.__enum__ = thx.stream.StreamValue; return $x; };
+thx.stream.StreamValue.Failure = function(err) { var $x = ["Failure",2,err]; $x.__enum__ = thx.stream.StreamValue; return $x; };
 thx.stream.Value = function(value) {
 	var _g = this;
 	this.value = value;
@@ -1737,6 +2245,10 @@ thx.stream.dom.Dom.streamKey = function(el,name,capture) {
 		return $r;
 	}(this)));
 };
+thx.stream.dom.Dom.streamFocus = function(el,capture) {
+	if(capture == null) capture = false;
+	return thx.stream.dom.Dom.streamEvent(el,"focus",capture).toTrue().merge(thx.stream.dom.Dom.streamEvent(el,"blur",capture).toFalse());
+};
 thx.stream.dom.Dom.streamClick = function(el,capture) {
 	if(capture == null) capture = false;
 	return thx.stream.dom.Dom.streamEvent(el,"click",capture);
@@ -1770,7 +2282,12 @@ thx.stream.dom.Dom.subscribeAttribute = function(el,name) {
 thx.stream.dom.Dom.subscribeToggleAttribute = function(el,name,value) {
 	if(null == value) value = el.getAttribute(name);
 	return function(on) {
-		if(on) el.removeAttribute(name); else el.setAttribute(name,value);
+		if(on) el.setAttribute(name,value); else el.removeAttribute(name);
+	};
+};
+thx.stream.dom.Dom.subscribeToggleClass = function(el,name) {
+	return function(on) {
+		if(on) el.classList.add(name); else el.classList.remove(name);
 	};
 };
 thx.stream.dom.Dom.subscribeToggleVisibility = function(el) {

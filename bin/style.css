@@ -27,3 +27,7 @@ pre {
     font-family: monospace;
     border-radius: 8px;
 }
+
+canvas {
+    background-color: #f0f0f0;
+}

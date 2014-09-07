@@ -1,4 +1,5 @@
 import js.Browser;
+import js.html.CanvasElement;
 import js.html.*;
 
 using thx.stream.dom.Dom;
@@ -72,6 +73,42 @@ class Demo {
       .subscribe(output.subscribeText());
   }
 
+  public static function draw(demo : Demo) {
+    var el  = demo.panel('draw canvas', 'canvas.streamMouseEvent("mousemove")
+  .window(2)
+  .pair(canvas
+    .streamMouseEvent("mousedown").toTrue()
+    .merge(canvas.streamMouseEvent("mouseup").toFalse()))
+  .filterValue(function(t) return t._1)
+  .mapValue(function(t) return t._0)
+  .subscribe(function(e) {
+    ctx.beginPath();
+    ctx.moveTo(e[0].offsetX, e[0].offsetY);
+    ctx.lineTo(e[1].offsetX, e[1].offsetY);
+    ctx.stroke();
+  });'),
+        canvas = demo.canvas(470, 300, el),
+        ctx    = canvas.getContext2d();
+
+    ctx.lineWidth = 4;
+    ctx.setStrokeColor("#345");
+    ctx.lineCap = "round";
+
+    canvas.streamMouseEvent("mousemove")
+      .window(2)
+      .pair(canvas
+        .streamMouseEvent("mousedown").toTrue()
+        .merge(canvas.streamMouseEvent("mouseup").toFalse()))
+      .filterValue(function(t) return t._1)
+      .mapValue(function(t) return t._0)
+      .subscribe(function(e) {
+        ctx.beginPath();
+        ctx.moveTo(e[0].offsetX, e[0].offsetY);
+        ctx.lineTo(e[1].offsetX, e[1].offsetY);
+        ctx.stroke();
+      });
+  }
+
   public static function main() {
     var demo = new Demo(Browser.document.getElementById('container'));
 
@@ -79,6 +116,7 @@ class Demo {
     click(demo);
     plusMinus(demo);
     replicate(demo);
+    draw(demo);
   }
 
   public var container(default, null) : Element;
@@ -131,6 +169,14 @@ class Demo {
     var el = Browser.document.createInputElement();
     if(null != placeholder)
       el.placeholder = placeholder;
+    append(el, container);
+    return el;
+  }
+
+  public function canvas(width : Int, height : Int, ?container : Element) : CanvasElement {
+    var el = Browser.document.createCanvasElement();
+    el.width = width;
+    el.height = height;
     append(el, container);
     return el;
   }
