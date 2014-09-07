@@ -10,7 +10,7 @@ var Demo = function(container) {
 };
 Demo.__name__ = true;
 Demo.mouseMove = function(demo) {
-	var el = demo.panel("mouse move","container\n  .streamMouseEvent('mousemove')\n  .mapValue(function(e) return 'x: ${e.clientX}, y: ${e.clientY}')\n  .subscribe(output.subscribeText());");
+	var el = demo.panel("mouse move","container\n  .streamMouseMove()\n  .mapValue(function(e) return 'x: ${e.clientX}, y: ${e.clientY}')\n  .subscribe(output.subscribeText());");
 	var output = demo.output(el);
 	thx.stream.dom.Dom.streamEvent(demo.container,"mousemove",false).mapValue(function(e) {
 		return "x: " + e.clientX + ", y: " + e.clientY;
@@ -46,20 +46,23 @@ Demo.replicate = function(demo) {
 	}).subscribe(thx.stream.dom.Dom.subscribeText(output));
 };
 Demo.draw = function(demo) {
-	var el = demo.panel("draw canvas","canvas.streamMouseEvent(\"mousemove\")\n  .window(2)\n  .pair(canvas\n    .streamMouseEvent(\"mousedown\").toTrue()\n    .merge(canvas.streamMouseEvent(\"mouseup\").toFalse()))\n  .filterValue(function(t) return t._1)\n  .mapValue(function(t) return t._0)\n  .subscribe(function(e) {\n    ctx.beginPath();\n    ctx.moveTo(e[0].offsetX, e[0].offsetY);\n    ctx.lineTo(e[1].offsetX, e[1].offsetY);\n    ctx.stroke();\n  });");
+	var el = demo.panel("draw canvas","canvas.streamMouseMove()\n  .mapValue(function(e) {\n    var bb = canvas.getBoundingClientRect();\n    return { x : e.clientX - bb.left, y : e.clientY - bb.top };\n  })\n  .window(2)\n  .pair(canvas\n    .streamMouseDown()\n    .toTrue()\n    .merge(canvas.streamMouseUp().toFalse()))\n  .filterValue(function(t) return t._1)\n  .mapValue(function(t) return t._0)\n  .subscribe(function(e) {\n    ctx.beginPath();\n    ctx.moveTo(e[0].x, e[0].y);\n    ctx.lineTo(e[1].x, e[1].y);\n    ctx.stroke();\n  });");
 	var canvas = demo.canvas(470,300,el);
 	var ctx = canvas.getContext("2d");
 	ctx.lineWidth = 4;
-	ctx.setStrokeColor("#345");
+	ctx.strokeStyle = "#345";
 	ctx.lineCap = "round";
-	thx.stream.dom.Dom.streamEvent(canvas,"mousemove",false).window(2).pair(thx.stream.dom.Dom.streamEvent(canvas,"mousedown",false).toTrue().merge(thx.stream.dom.Dom.streamEvent(canvas,"mouseup",false).toFalse())).filterValue(function(t) {
+	thx.stream.dom.Dom.streamEvent(canvas,"mousemove",false).mapValue(function(e) {
+		var bb = canvas.getBoundingClientRect();
+		return { x : e.clientX - bb.left, y : e.clientY - bb.top};
+	}).window(2).pair(thx.stream.dom.Dom.streamEvent(canvas,"mousedown",false).toTrue().merge(thx.stream.dom.Dom.streamEvent(canvas,"mouseup",false).toFalse())).filterValue(function(t) {
 		return t._1;
 	}).mapValue(function(t1) {
 		return t1._0;
-	}).subscribe(function(e) {
+	}).subscribe(function(e1) {
 		ctx.beginPath();
-		ctx.moveTo(e[0].offsetX,e[0].offsetY);
-		ctx.lineTo(e[1].offsetX,e[1].offsetY);
+		ctx.moveTo(e1[0].x,e1[0].y);
+		ctx.lineTo(e1[1].x,e1[1].y);
 		ctx.stroke();
 	});
 };
@@ -99,7 +102,7 @@ Demo.prototype = {
 		var el;
 		var _this = window.document;
 		el = _this.createElement("pre");
-		el.innerText = content;
+		el.textContent = content;
 		this.append(el,container);
 		return el;
 	}
@@ -107,7 +110,7 @@ Demo.prototype = {
 		var el;
 		var _this = window.document;
 		el = _this.createElement("button");
-		el.innerText = label;
+		el.textContent = label;
 		this.append(el,container);
 		return el;
 	}
@@ -2231,6 +2234,18 @@ thx.stream.dom.Dom.streamMouseEvent = function(el,name,capture) {
 	if(capture == null) capture = false;
 	return thx.stream.dom.Dom.streamEvent(el,name,capture);
 };
+thx.stream.dom.Dom.streamMouseMove = function(el,capture) {
+	if(capture == null) capture = false;
+	return thx.stream.dom.Dom.streamEvent(el,"mousemove",capture);
+};
+thx.stream.dom.Dom.streamMouseDown = function(el,capture) {
+	if(capture == null) capture = false;
+	return thx.stream.dom.Dom.streamEvent(el,"mousedown",capture);
+};
+thx.stream.dom.Dom.streamMouseUp = function(el,capture) {
+	if(capture == null) capture = false;
+	return thx.stream.dom.Dom.streamEvent(el,"mouseup",capture);
+};
 thx.stream.dom.Dom.streamKey = function(el,name,capture) {
 	if(capture == null) capture = false;
 	return thx.stream.Emitter.create((function($this) {
@@ -2261,7 +2276,7 @@ thx.stream.dom.Dom.streamInput = function(el,capture) {
 };
 thx.stream.dom.Dom.subscribeText = function(el) {
 	return function(text) {
-		el.innerText = text;
+		el.textContent = text;
 	};
 };
 thx.stream.dom.Dom.subscribeHTML = function(el) {

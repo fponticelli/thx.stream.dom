@@ -7,12 +7,12 @@ using thx.stream.dom.Dom;
 class Demo {
   public static function mouseMove(demo : Demo) {
     var el     = demo.panel('mouse move', "container
-  .streamMouseEvent('mousemove')
+  .streamMouseMove()
   .mapValue(function(e) return 'x: ${e.clientX}, y: ${e.clientY}')
   .subscribe(output.subscribeText());"),
         output = demo.output(el);
     demo.container
-      .streamMouseEvent('mousemove')
+      .streamMouseMove()
       .mapValue(function(e) return 'x: ${e.clientX}, y: ${e.clientY}')
       .subscribe(output.subscribeText());
   }
@@ -74,37 +74,47 @@ class Demo {
   }
 
   public static function draw(demo : Demo) {
-    var el  = demo.panel('draw canvas', 'canvas.streamMouseEvent("mousemove")
+    var el  = demo.panel('draw canvas', 'canvas.streamMouseMove()
+  .mapValue(function(e) {
+    var bb = canvas.getBoundingClientRect();
+    return { x : e.clientX - bb.left, y : e.clientY - bb.top };
+  })
   .window(2)
   .pair(canvas
-    .streamMouseEvent("mousedown").toTrue()
-    .merge(canvas.streamMouseEvent("mouseup").toFalse()))
+    .streamMouseDown()
+    .toTrue()
+    .merge(canvas.streamMouseUp().toFalse()))
   .filterValue(function(t) return t._1)
   .mapValue(function(t) return t._0)
   .subscribe(function(e) {
     ctx.beginPath();
-    ctx.moveTo(e[0].offsetX, e[0].offsetY);
-    ctx.lineTo(e[1].offsetX, e[1].offsetY);
+    ctx.moveTo(e[0].x, e[0].y);
+    ctx.lineTo(e[1].x, e[1].y);
     ctx.stroke();
   });'),
         canvas = demo.canvas(470, 300, el),
         ctx    = canvas.getContext2d();
 
     ctx.lineWidth = 4;
-    ctx.setStrokeColor("#345");
+    ctx.strokeStyle = "#345";
     ctx.lineCap = "round";
 
-    canvas.streamMouseEvent("mousemove")
+    canvas.streamMouseMove()
+      .mapValue(function(e) {
+        var bb = canvas.getBoundingClientRect();
+        return { x : e.clientX - bb.left, y : e.clientY - bb.top };
+      })
       .window(2)
       .pair(canvas
-        .streamMouseEvent("mousedown").toTrue()
-        .merge(canvas.streamMouseEvent("mouseup").toFalse()))
+        .streamMouseDown()
+        .toTrue()
+        .merge(canvas.streamMouseUp().toFalse()))
       .filterValue(function(t) return t._1)
       .mapValue(function(t) return t._0)
       .subscribe(function(e) {
         ctx.beginPath();
-        ctx.moveTo(e[0].offsetX, e[0].offsetY);
-        ctx.lineTo(e[1].offsetX, e[1].offsetY);
+        ctx.moveTo(e[0].x, e[0].y);
+        ctx.lineTo(e[1].x, e[1].y);
         ctx.stroke();
       });
   }
@@ -153,14 +163,14 @@ class Demo {
 
   public function pre(content : String, ?container : Element) : PreElement {
     var el = Browser.document.createPreElement();
-    el.innerText = content;
+    el.textContent = content;
     append(el, container);
     return el;
   }
 
   public function button(label : String, ?container : Element) : ButtonElement {
     var el = Browser.document.createButtonElement();
-    el.innerText = label;
+    el.textContent = label;
     append(el, container);
     return el;
   }

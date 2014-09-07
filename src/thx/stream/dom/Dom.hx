@@ -24,6 +24,15 @@ class Dom {
   public inline static function streamMouseEvent(el : Element, name : String, capture = false) : Emitter<MouseEvent>
     return streamEvent(el, name, capture);
 
+  public inline static function streamMouseMove(el : Element, capture = false) : Emitter<MouseEvent>
+    return streamEvent(el, "mousemove", capture);
+
+  public inline static function streamMouseDown(el : Element, capture = false) : Emitter<MouseEvent>
+    return streamEvent(el, "mousedown", capture);
+
+  public inline static function streamMouseUp(el : Element, capture = false) : Emitter<MouseEvent>
+    return streamEvent(el, "mouseup", capture);
+
   public static function streamKey(el : Element, name : String, capture = false) : Emitter<KeyboardEvent>
     return Emitter.create({
       if(!name.startsWith('key'))
@@ -44,7 +53,7 @@ class Dom {
     return streamMouseEvent(el, 'input', capture).mapValue(function(_) return el.value);
 
   public static function subscribeText(el : Element) : String -> Void
-    return function(text : String) el.innerText = text;
+    return function(text : String) el.textContent = text;
 
   public static function subscribeHTML(el : Element) : String -> Void
     return function(html : String) el.innerHTML = html;
