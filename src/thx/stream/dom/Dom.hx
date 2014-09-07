@@ -52,8 +52,8 @@ class Dom {
   public inline static function streamInput(el : InputElement, capture = false) : Emitter<String>
     return streamMouseEvent(el, 'input', capture).mapValue(function(_) return el.value);
 
-  public static function subscribeText(el : Element) : String -> Void
-    return function(text : String) el.textContent = text;
+  public static function subscribeText(el : Element, force = false) : String -> Void
+    return function(text : String) if(el.textContent != text || force) el.textContent = text;
 
   public static function subscribeHTML(el : Element) : String -> Void
     return function(html : String) el.innerHTML = html;

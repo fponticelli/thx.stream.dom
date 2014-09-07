@@ -2274,9 +2274,10 @@ thx.stream.dom.Dom.streamInput = function(el,capture) {
 		return el.value;
 	});
 };
-thx.stream.dom.Dom.subscribeText = function(el) {
+thx.stream.dom.Dom.subscribeText = function(el,force) {
+	if(force == null) force = false;
 	return function(text) {
-		el.textContent = text;
+		if(el.textContent != text || force) el.textContent = text;
 	};
 };
 thx.stream.dom.Dom.subscribeHTML = function(el) {
