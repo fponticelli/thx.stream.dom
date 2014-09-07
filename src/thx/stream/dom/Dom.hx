@@ -34,6 +34,9 @@ class Dom {
       }
     });
 
+  public static function streamFocus(el : Element, capture = false) : Emitter<Bool>
+    return streamEvent(el, 'focus', capture).toTrue().merge(streamEvent(el, 'blur', capture).toFalse());
+
   public inline static function streamClick(el : Element, capture = false) : Emitter<MouseEvent>
     return streamMouseEvent(el, 'click', capture);
 
@@ -55,11 +58,11 @@ class Dom {
   public static function subscribeToggleAttribute<T>(el : Element, name : String, ?value : T) : Bool -> Void {
     if(null == value)
       value = cast el.getAttribute(name);
-    return function(on) if(on) el.removeAttribute(name) else el.setAttribute(name, cast value);
+    return function(on) if(on) el.setAttribute(name, cast value) else el.removeAttribute(name);
   }
 
   public static function subscribeToggleClass(el : Element, name : String) : Bool -> Void
-    return function(on) if(on) el.classList.remove(name) else el.classList.add(name);
+    return function(on) if(on) el.classList.add(name) else el.classList.remove(name);
 
   public static function subscribeToggleVisibility(el : Element) : Bool -> Void {
     var originalDisplay = el.style.display;
