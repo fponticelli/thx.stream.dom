@@ -92,7 +92,7 @@ class Demo {
     ctx.lineTo(e[1].x, e[1].y);
     ctx.stroke();
   });'),
-        canvas = demo.canvas(470, 300, el),
+        canvas = demo.canvas(470, 240, el),
         ctx    = canvas.getContext2d();
 
     ctx.lineWidth = 4;

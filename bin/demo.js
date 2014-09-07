@@ -47,7 +47,7 @@ Demo.replicate = function(demo) {
 };
 Demo.draw = function(demo) {
 	var el = demo.panel("draw canvas","canvas.streamMouseMove()\n  .mapValue(function(e) {\n    var bb = canvas.getBoundingClientRect();\n    return { x : e.clientX - bb.left, y : e.clientY - bb.top };\n  })\n  .window(2)\n  .pair(canvas\n    .streamMouseDown()\n    .toTrue()\n    .merge(canvas.streamMouseUp().toFalse()))\n  .filterValue(function(t) return t._1)\n  .mapValue(function(t) return t._0)\n  .subscribe(function(e) {\n    ctx.beginPath();\n    ctx.moveTo(e[0].x, e[0].y);\n    ctx.lineTo(e[1].x, e[1].y);\n    ctx.stroke();\n  });");
-	var canvas = demo.canvas(470,300,el);
+	var canvas = demo.canvas(470,240,el);
 	var ctx = canvas.getContext("2d");
 	ctx.lineWidth = 4;
 	ctx.strokeStyle = "#345";
