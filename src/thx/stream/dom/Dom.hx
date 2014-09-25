@@ -37,7 +37,7 @@ class Dom {
     });
 
   public inline static function streamInput(el : InputElement, capture = false) : Emitter<String>
-    return streamMouseEvent(el, 'input', capture).mapValue(function(_) return el.value);
+    return streamMouseEvent(el, 'input', capture).map(function(_) return el.value);
 
   public inline static function streamMouseDown(el : Element, capture = false) : Emitter<MouseEvent>
     return streamEvent(el, "mousedown", capture);
