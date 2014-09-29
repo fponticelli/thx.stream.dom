@@ -1,0 +1,18 @@
+-cp ../src
+--no-output
+-D doc-gen
+-D display
+-D dox
+-dce no
+-lib thx.core
+-lib thx.promise
+-lib thx.stream
+-lib thx.stream.dom
+ImportStreamDom
+
+--each
+-xml xml/js.xml
+-js _
+
+#--next
+#-xml xml/cross.xml

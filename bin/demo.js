@@ -578,7 +578,7 @@ thx.core.Arrays.extract = function(a,predicate) {
 	}
 	return null;
 };
-thx.core.Arrays.first = function(array,predicate) {
+thx.core.Arrays.find = function(array,predicate) {
 	var _g = 0;
 	while(_g < array.length) {
 		var item = array[_g];
@@ -586,6 +586,9 @@ thx.core.Arrays.first = function(array,predicate) {
 		if(predicate(item)) return item;
 	}
 	return null;
+};
+thx.core.Arrays.first = function(array) {
+	return array[0];
 };
 thx.core.Arrays.flatMap = function(array,callback) {
 	return thx.core.Arrays.flatten(array.map(callback));
@@ -595,6 +598,9 @@ thx.core.Arrays.flatten = function(array) {
 };
 thx.core.Arrays.isEmpty = function(array) {
 	return array.length == 0;
+};
+thx.core.Arrays.last = function(array) {
+	return array[array.length - 1];
 };
 thx.core.Arrays.mapi = function(array,callback) {
 	return array.map(callback);
@@ -658,9 +664,9 @@ thx.core.Function0.noop = function() {
 };
 thx.core.Function0.once = function(f) {
 	return function() {
-		f();
-		f = function() {
-		};
+		var t = f;
+		f = thx.core.Function0.noop;
+		t();
 	};
 };
 thx.core.Function1 = function() { };
@@ -670,13 +676,13 @@ thx.core.Function1.compose = function(fa,fb) {
 		return fa(fb(v));
 	};
 };
-thx.core.Function1.noop = function(_) {
-};
 thx.core.Function1.join = function(fa,fb) {
 	return function(v) {
 		fa(v);
 		fb(v);
 	};
+};
+thx.core.Function1.noop = function(_) {
 };
 thx.core.Functions = function() { };
 thx.core.Functions.__name__ = true;
@@ -685,11 +691,17 @@ thx.core.Functions.equality = function(a,b) {
 };
 thx.core.Ints = function() { };
 thx.core.Ints.__name__ = true;
+thx.core.Ints.abs = function(v) {
+	if(v < 0) return -v; else return v;
+};
 thx.core.Ints.canParse = function(s) {
 	return thx.core.Ints.pattern_parse.match(s);
 };
 thx.core.Ints.clamp = function(v,min,max) {
 	if(v < min) return min; else if(v > max) return max; else return v;
+};
+thx.core.Ints.clampSym = function(v,max) {
+	return thx.core.Ints.clamp(v,-max,max);
 };
 thx.core.Ints.compare = function(a,b) {
 	return a - b;
@@ -704,18 +716,27 @@ thx.core.Ints.parse = function(s) {
 	if(HxOverrides.substr(s,0,1) == "+") s = HxOverrides.substr(s,1,null);
 	return Std.parseInt(s);
 };
+thx.core.Ints.random = function(min,max) {
+	if(min == null) min = 0;
+	return Std.random(max + 1) + min;
+};
 thx.core.Ints.range = function(start,stop,step) {
 	if(step == null) step = 1;
 	if(null == stop) {
 		stop = start;
 		start = 0;
 	}
-	if((stop - start) / step == Math.POSITIVE_INFINITY) throw "infinite range";
+	if((stop - start) / step == Infinity) throw "infinite range";
 	var range = [];
 	var i = -1;
 	var j;
 	if(step < 0) while((j = start + step * ++i) > stop) range.push(j); else while((j = start + step * ++i) < stop) range.push(j);
 	return range;
+};
+thx.core.Ints.wrapCircular = function(v,max) {
+	v = v % max;
+	if(v < 0) v += max;
+	return v;
 };
 thx.core.Nil = { __ename__ : true, __constructs__ : ["nil"] };
 thx.core.Nil.nil = ["nil",0];
@@ -749,7 +770,7 @@ thx.core.Options.equals = function(a,b,eq) {
 	}
 };
 thx.core.Options.equalsValue = function(a,b,eq) {
-	return thx.core.Options.equals(a,thx.core.Options.toOption(b),eq);
+	return thx.core.Options.equals(a,null == b?haxe.ds.Option.None:haxe.ds.Option.Some(b),eq);
 };
 thx.core.Options.flatMap = function(option,callback) {
 	switch(option[1]) {
@@ -853,12 +874,6 @@ thx.core._Tuple.Tuple1_Impl_.get__0 = function(this1) {
 thx.core._Tuple.Tuple1_Impl_["with"] = function(this1,v) {
 	return { _0 : this1, _1 : v};
 };
-thx.core._Tuple.Tuple1_Impl_.dropLeft = function(this1) {
-	return thx.core.Nil.nil;
-};
-thx.core._Tuple.Tuple1_Impl_.dropRight = function(this1) {
-	return thx.core.Nil.nil;
-};
 thx.core._Tuple.Tuple1_Impl_.toString = function(this1) {
 	return "Tuple1(" + Std.string(this1) + ")";
 };
@@ -867,10 +882,10 @@ thx.core._Tuple.Tuple2_Impl_.__name__ = true;
 thx.core._Tuple.Tuple2_Impl_._new = function(_0,_1) {
 	return { _0 : _0, _1 : _1};
 };
-thx.core._Tuple.Tuple2_Impl_.get__0 = function(this1) {
+thx.core._Tuple.Tuple2_Impl_.get_left = function(this1) {
 	return this1._0;
 };
-thx.core._Tuple.Tuple2_Impl_.get__1 = function(this1) {
+thx.core._Tuple.Tuple2_Impl_.get_right = function(this1) {
 	return this1._1;
 };
 thx.core._Tuple.Tuple2_Impl_.flip = function(this1) {
@@ -893,15 +908,6 @@ thx.core._Tuple.Tuple3_Impl_.__name__ = true;
 thx.core._Tuple.Tuple3_Impl_._new = function(_0,_1,_2) {
 	return { _0 : _0, _1 : _1, _2 : _2};
 };
-thx.core._Tuple.Tuple3_Impl_.get__0 = function(this1) {
-	return this1._0;
-};
-thx.core._Tuple.Tuple3_Impl_.get__1 = function(this1) {
-	return this1._1;
-};
-thx.core._Tuple.Tuple3_Impl_.get__2 = function(this1) {
-	return this1._2;
-};
 thx.core._Tuple.Tuple3_Impl_.flip = function(this1) {
 	return { _0 : this1._2, _1 : this1._1, _2 : this1._0};
 };
@@ -921,18 +927,6 @@ thx.core._Tuple.Tuple4_Impl_ = function() { };
 thx.core._Tuple.Tuple4_Impl_.__name__ = true;
 thx.core._Tuple.Tuple4_Impl_._new = function(_0,_1,_2,_3) {
 	return { _0 : _0, _1 : _1, _2 : _2, _3 : _3};
-};
-thx.core._Tuple.Tuple4_Impl_.get__0 = function(this1) {
-	return this1._0;
-};
-thx.core._Tuple.Tuple4_Impl_.get__1 = function(this1) {
-	return this1._1;
-};
-thx.core._Tuple.Tuple4_Impl_.get__2 = function(this1) {
-	return this1._2;
-};
-thx.core._Tuple.Tuple4_Impl_.get__3 = function(this1) {
-	return this1._3;
 };
 thx.core._Tuple.Tuple4_Impl_.flip = function(this1) {
 	return { _0 : this1._3, _1 : this1._2, _2 : this1._1, _3 : this1._0};
@@ -954,21 +948,6 @@ thx.core._Tuple.Tuple5_Impl_.__name__ = true;
 thx.core._Tuple.Tuple5_Impl_._new = function(_0,_1,_2,_3,_4) {
 	return { _0 : _0, _1 : _1, _2 : _2, _3 : _3, _4 : _4};
 };
-thx.core._Tuple.Tuple5_Impl_.get__0 = function(this1) {
-	return this1._0;
-};
-thx.core._Tuple.Tuple5_Impl_.get__1 = function(this1) {
-	return this1._1;
-};
-thx.core._Tuple.Tuple5_Impl_.get__2 = function(this1) {
-	return this1._2;
-};
-thx.core._Tuple.Tuple5_Impl_.get__3 = function(this1) {
-	return this1._3;
-};
-thx.core._Tuple.Tuple5_Impl_.get__4 = function(this1) {
-	return this1._4;
-};
 thx.core._Tuple.Tuple5_Impl_.flip = function(this1) {
 	return { _0 : this1._4, _1 : this1._3, _2 : this1._2, _3 : this1._1, _4 : this1._0};
 };
@@ -988,24 +967,6 @@ thx.core._Tuple.Tuple6_Impl_ = function() { };
 thx.core._Tuple.Tuple6_Impl_.__name__ = true;
 thx.core._Tuple.Tuple6_Impl_._new = function(_0,_1,_2,_3,_4,_5) {
 	return { _0 : _0, _1 : _1, _2 : _2, _3 : _3, _4 : _4, _5 : _5};
-};
-thx.core._Tuple.Tuple6_Impl_.get__0 = function(this1) {
-	return this1._0;
-};
-thx.core._Tuple.Tuple6_Impl_.get__1 = function(this1) {
-	return this1._1;
-};
-thx.core._Tuple.Tuple6_Impl_.get__2 = function(this1) {
-	return this1._2;
-};
-thx.core._Tuple.Tuple6_Impl_.get__3 = function(this1) {
-	return this1._3;
-};
-thx.core._Tuple.Tuple6_Impl_.get__4 = function(this1) {
-	return this1._4;
-};
-thx.core._Tuple.Tuple6_Impl_.get__5 = function(this1) {
-	return this1._5;
 };
 thx.core._Tuple.Tuple6_Impl_.flip = function(this1) {
 	return { _0 : this1._5, _1 : this1._4, _2 : this1._3, _3 : this1._2, _4 : this1._1, _5 : this1._0};
@@ -2469,7 +2430,7 @@ thx.stream.EmitterFloats.lessThanOrEqualTo = function(emitter,x) {
 };
 thx.stream.EmitterFloats.max = function(emitter) {
 	return emitter.filter((function() {
-		var max = Math.NEGATIVE_INFINITY;
+		var max = -Infinity;
 		return function(v) {
 			if(v > max) {
 				max = v;
@@ -2480,7 +2441,7 @@ thx.stream.EmitterFloats.max = function(emitter) {
 };
 thx.stream.EmitterFloats.min = function(emitter) {
 	return emitter.filter((function() {
-		var min = Math.POSITIVE_INFINITY;
+		var min = Infinity;
 		return function(v) {
 			if(v < min) {
 				min = v;
@@ -2832,15 +2793,6 @@ var $_, $fid = 0;
 function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id__ = $fid++; var f; if( o.hx__closures__ == null ) o.hx__closures__ = {}; else f = o.hx__closures__[m.__id__]; if( f == null ) { f = function(){ return f.method.apply(f.scope, arguments); }; f.scope = o; f.method = m; o.hx__closures__[m.__id__] = f; } return f; }
 if(Array.prototype.indexOf) HxOverrides.indexOf = function(a,o,i) {
 	return Array.prototype.indexOf.call(a,o,i);
-};
-Math.NaN = Number.NaN;
-Math.NEGATIVE_INFINITY = Number.NEGATIVE_INFINITY;
-Math.POSITIVE_INFINITY = Number.POSITIVE_INFINITY;
-Math.isFinite = function(i) {
-	return isFinite(i);
-};
-Math.isNaN = function(i1) {
-	return isNaN(i1);
 };
 String.prototype.__class__ = String;
 String.__name__ = true;
