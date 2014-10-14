@@ -5,3 +5,4 @@
 -lib thx.stream
 -main Demo
 -js bin/demo.js
+-dce full
