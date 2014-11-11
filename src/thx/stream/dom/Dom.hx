@@ -36,6 +36,12 @@ class Dom {
       }
     });
 
+  public inline static function streamChecked(el : InputElement, capture = false) : Emitter<Bool>
+    return streamEvent(el, 'change', capture).map(function(_) return el.checked);
+
+  public inline static function streamChange(el : InputElement, capture = false) : Emitter<String>
+    return streamEvent(el, 'change', capture).map(function(_) return el.value);
+
   public inline static function streamInput(el : InputElement, capture = false) : Emitter<String>
     return streamMouseEvent(el, 'input', capture).map(function(_) return el.value);
 
