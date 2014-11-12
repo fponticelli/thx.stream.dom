@@ -8,12 +8,12 @@ class Demo {
   public static function mouseMove(demo : Demo) {
     var el     = demo.panel('mouse move', "container
   .streamMouseMove()
-  .map(function(e) return 'x: ${e.clientX}, y: ${e.clientY}')
+  .pluck('x: ${_.clientX}, y: ${_.clientY}')
   .subscribe(output.subscribeText());"),
         output = demo.output(el);
     demo.container
       .streamMouseMove()
-      .map(function(e) return 'x: ${e.clientX}, y: ${e.clientY}')
+      .pluck('x: ${_.clientX}, y: ${_.clientY}')
       .subscribe(output.subscribeText());
   }
 
@@ -21,14 +21,14 @@ class Demo {
     var el     = demo.panel('click count', "click
   .streamClick()
   .reduce(0, function(acc, _) return acc + 1)
-  .map(function(count) return 'clicks: $count')
+  .pluck('clicks: $_')
   .subscribe(output.subscribeText());"),
         click  = demo.button('click', el),
         output = demo.output(el);
     click
       .streamClick()
       .reduce(0, function(acc, _) return acc + 1)
-      .map(function(count) return 'clicks: $count')
+      .pluck('clicks: $_')
       .subscribe(output.subscribeText());
   }
 
@@ -42,7 +42,7 @@ class Demo {
       .toValue(-1)
   )
   .reduce(0, function(acc, v) return acc + v)
-  .map(function(count) return 'count: $count')
+  .pluck('count: $_')
   .subscribe(output.subscribeText());"),
         plus   = demo.button('+', el),
         minus  = demo.button('-', el),
@@ -56,20 +56,20 @@ class Demo {
           .toValue(-1)
       )
       .reduce(0, function(acc, v) return acc + v)
-      .map(function(count) return 'count: $count')
+      .pluck('count: $_')
       .subscribe(output.subscribeText());
   }
 
   public static function replicate(demo : Demo) {
     var el     = demo.panel('replicate text', "input
   .streamInput()
-  .map(function(s) return s.toUpperCase())
+  .pluck(_.toUpperCase())
   .subscribe(output.subscribeText());"),
         input  = demo.input('type text', el),
         output = demo.output(el);
     input
       .streamInput()
-      .map(function(s) return s.toUpperCase())
+      .pluck(_.toUpperCase())
       .subscribe(output.subscribeText());
   }
 
@@ -84,8 +84,8 @@ class Demo {
     .streamMouseDown()
     .toTrue()
     .merge(canvas.streamMouseUp().toFalse()))
-  .filter(function(t) return t._1)
-  .map(function(t) return t._0)
+  .filterPluck(_._1)
+  .pluck(_._0)
   .subscribe(function(e) {
     ctx.beginPath();
     ctx.moveTo(e[0].x, e[0].y);
@@ -109,8 +109,8 @@ class Demo {
         .streamMouseDown()
         .toTrue()
         .merge(canvas.streamMouseUp().toFalse()))
-      .filter(function(t) return t._1)
-      .map(function(t) return t._0)
+      .filterPluck(_._1)
+      .pluck(_._0)
       .subscribe(function(e) {
         ctx.beginPath();
         ctx.moveTo(e[0].x, e[0].y);

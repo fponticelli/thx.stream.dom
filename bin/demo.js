@@ -1,4 +1,5 @@
 (function () { "use strict";
+var console = (1,eval)('this').console || {log:function(){}};
 function $extend(from, fields) {
 	function Inherit() {} Inherit.prototype = from; var proto = new Inherit();
 	for (var name in fields) proto[name] = fields[name];
@@ -10,43 +11,43 @@ var Demo = function(container) {
 };
 Demo.__name__ = true;
 Demo.mouseMove = function(demo) {
-	var el = demo.panel("mouse move","container\n  .streamMouseMove()\n  .map(function(e) return 'x: ${e.clientX}, y: ${e.clientY}')\n  .subscribe(output.subscribeText());");
+	var el = demo.panel("mouse move","container\n  .streamMouseMove()\n  .pluck('x: ${_.clientX}, y: ${_.clientY}')\n  .subscribe(output.subscribeText());");
 	var output = demo.output(el);
-	thx.stream.dom.Dom.streamEvent(demo.container,"mousemove",false).map(function(e) {
-		return "x: " + e.clientX + ", y: " + e.clientY;
+	thx.stream.dom.Dom.streamEvent(demo.container,"mousemove",false).map(function(_) {
+		return "x: " + _.clientX + ", y: " + _.clientY;
 	}).subscribe(thx.stream.dom.Dom.subscribeText(output));
 };
 Demo.click = function(demo) {
-	var el = demo.panel("click count","click\n  .streamClick()\n  .reduce(0, function(acc, _) return acc + 1)\n  .map(function(count) return 'clicks: $count')\n  .subscribe(output.subscribeText());");
+	var el = demo.panel("click count","click\n  .streamClick()\n  .reduce(0, function(acc, _) return acc + 1)\n  .pluck('clicks: $_')\n  .subscribe(output.subscribeText());");
 	var click = demo.button("click",el);
 	var output = demo.output(el);
 	thx.stream.dom.Dom.streamEvent(click,"click",false).reduce(0,function(acc,_) {
 		return acc + 1;
-	}).map(function(count) {
-		return "clicks: " + count;
+	}).map(function(_1) {
+		return "clicks: " + _1;
 	}).subscribe(thx.stream.dom.Dom.subscribeText(output));
 };
 Demo.plusMinus = function(demo) {
-	var el = demo.panel("plus & minus","plus\n  .streamClick()\n  .toValue(1)\n  .merge(\n    minus\n      .streamClick()\n      .toValue(-1)\n  )\n  .reduce(0, function(acc, v) return acc + v)\n  .map(function(count) return 'count: $count')\n  .subscribe(output.subscribeText());");
+	var el = demo.panel("plus & minus","plus\n  .streamClick()\n  .toValue(1)\n  .merge(\n    minus\n      .streamClick()\n      .toValue(-1)\n  )\n  .reduce(0, function(acc, v) return acc + v)\n  .pluck('count: $_')\n  .subscribe(output.subscribeText());");
 	var plus = demo.button("+",el);
 	var minus = demo.button("-",el);
 	var output = demo.output(el);
 	thx.stream.dom.Dom.streamEvent(plus,"click",false).toValue(1).merge(thx.stream.dom.Dom.streamEvent(minus,"click",false).toValue(-1)).reduce(0,function(acc,v) {
 		return acc + v;
-	}).map(function(count) {
-		return "count: " + count;
+	}).map(function(_) {
+		return "count: " + _;
 	}).subscribe(thx.stream.dom.Dom.subscribeText(output));
 };
 Demo.replicate = function(demo) {
-	var el = demo.panel("replicate text","input\n  .streamInput()\n  .map(function(s) return s.toUpperCase())\n  .subscribe(output.subscribeText());");
+	var el = demo.panel("replicate text","input\n  .streamInput()\n  .pluck(_.toUpperCase())\n  .subscribe(output.subscribeText());");
 	var input = demo.input("type text",el);
 	var output = demo.output(el);
-	thx.stream.dom.Dom.streamInput(input,null).map(function(s) {
-		return s.toUpperCase();
+	thx.stream.dom.Dom.streamInput(input,null).map(function(_) {
+		return _.toUpperCase();
 	}).subscribe(thx.stream.dom.Dom.subscribeText(output));
 };
 Demo.draw = function(demo) {
-	var el = demo.panel("draw canvas","canvas.streamMouseMove()\n  .map(function(e) {\n    var bb = canvas.getBoundingClientRect();\n    return { x : e.clientX - bb.left, y : e.clientY - bb.top };\n  })\n  .window(2)\n  .pair(canvas\n    .streamMouseDown()\n    .toTrue()\n    .merge(canvas.streamMouseUp().toFalse()))\n  .filter(function(t) return t._1)\n  .map(function(t) return t._0)\n  .subscribe(function(e) {\n    ctx.beginPath();\n    ctx.moveTo(e[0].x, e[0].y);\n    ctx.lineTo(e[1].x, e[1].y);\n    ctx.stroke();\n  });");
+	var el = demo.panel("draw canvas","canvas.streamMouseMove()\n  .map(function(e) {\n    var bb = canvas.getBoundingClientRect();\n    return { x : e.clientX - bb.left, y : e.clientY - bb.top };\n  })\n  .window(2)\n  .pair(canvas\n    .streamMouseDown()\n    .toTrue()\n    .merge(canvas.streamMouseUp().toFalse()))\n  .filterPluck(_._1)\n  .pluck(_._0)\n  .subscribe(function(e) {\n    ctx.beginPath();\n    ctx.moveTo(e[0].x, e[0].y);\n    ctx.lineTo(e[1].x, e[1].y);\n    ctx.stroke();\n  });");
 	var canvas = demo.canvas(470,240,el);
 	var ctx = canvas.getContext("2d");
 	ctx.lineWidth = 4;
@@ -55,10 +56,10 @@ Demo.draw = function(demo) {
 	thx.stream.dom.Dom.streamEvent(canvas,"mousemove",false).map(function(e) {
 		var bb = canvas.getBoundingClientRect();
 		return { x : e.clientX - bb.left, y : e.clientY - bb.top};
-	}).window(2).pair(thx.stream.dom.Dom.streamEvent(canvas,"mousedown",false).toTrue().merge(thx.stream.dom.Dom.streamEvent(canvas,"mouseup",false).toFalse())).filter(function(t) {
-		return t._1;
-	}).map(function(t1) {
-		return t1._0;
+	}).window(2).pair(thx.stream.dom.Dom.streamEvent(canvas,"mousedown",false).toTrue().merge(thx.stream.dom.Dom.streamEvent(canvas,"mouseup",false).toFalse())).filter(function(_) {
+		return _._1;
+	}).map(function(_1) {
+		return _1._0;
 	}).subscribe(function(e1) {
 		ctx.beginPath();
 		ctx.moveTo(e1[0].x,e1[0].y);
@@ -275,18 +276,18 @@ js.Boot.__string_rec = function(o,s) {
 		if(o instanceof Array) {
 			if(o.__enum__) {
 				if(o.length == 2) return o[0];
-				var str = o[0] + "(";
+				var str2 = o[0] + "(";
 				s += "\t";
 				var _g1 = 2;
 				var _g = o.length;
 				while(_g1 < _g) {
-					var i = _g1++;
-					if(i != 2) str += "," + js.Boot.__string_rec(o[i],s); else str += js.Boot.__string_rec(o[i],s);
+					var i1 = _g1++;
+					if(i1 != 2) str2 += "," + js.Boot.__string_rec(o[i1],s); else str2 += js.Boot.__string_rec(o[i1],s);
 				}
-				return str + ")";
+				return str2 + ")";
 			}
 			var l = o.length;
-			var i1;
+			var i;
 			var str1 = "[";
 			s += "\t";
 			var _g2 = 0;
@@ -308,7 +309,7 @@ js.Boot.__string_rec = function(o,s) {
 			if(s2 != "[object Object]") return s2;
 		}
 		var k = null;
-		var str2 = "{\n";
+		var str = "{\n";
 		s += "\t";
 		var hasp = o.hasOwnProperty != null;
 		for( var k in o ) {
@@ -318,12 +319,12 @@ js.Boot.__string_rec = function(o,s) {
 		if(k == "prototype" || k == "__class__" || k == "__super__" || k == "__interfaces__" || k == "__properties__") {
 			continue;
 		}
-		if(str2.length != 2) str2 += ", \n";
-		str2 += s + k + " : " + js.Boot.__string_rec(o[k],s);
+		if(str.length != 2) str += ", \n";
+		str += s + k + " : " + js.Boot.__string_rec(o[k],s);
 		}
 		s = s.substring(1);
-		str2 += "\n" + s + "}";
-		return str2;
+		str += "\n" + s + "}";
+		return str;
 	case "function":
 		return "<function>";
 	case "string":
@@ -332,17 +333,24 @@ js.Boot.__string_rec = function(o,s) {
 		return String(o);
 	}
 };
+js.Browser = function() { };
+js.Browser.__name__ = true;
 var thx = {};
 thx.core = {};
 thx.core.Error = function(message,stack,pos) {
 	Error.call(this,message);
+	this.message = message;
 	if(null == stack) {
 		try {
 			stack = haxe.CallStack.exceptionStack();
 		} catch( e ) {
 			stack = [];
 		}
-		if(stack.length == 0) stack = haxe.CallStack.callStack();
+		if(stack.length == 0) try {
+			stack = haxe.CallStack.callStack();
+		} catch( e1 ) {
+			stack = [];
+		}
 	}
 	this.stackItems = stack;
 	this.pos = pos;
@@ -351,9 +359,17 @@ thx.core.Error.__name__ = true;
 thx.core.Error.__super__ = Error;
 thx.core.Error.prototype = $extend(Error.prototype,{
 	toString: function() {
-		return this.message + "from: " + this.pos.className + "." + this.pos.methodName + "() at " + this.pos.lineNumber + "\n\n" + haxe.CallStack.toString(this.stackItems);
+		return this.message + "\nfrom: " + this.pos.className + "." + this.pos.methodName + "() at " + this.pos.lineNumber + "\n\n" + haxe.CallStack.toString(this.stackItems);
 	}
 });
+thx.core._Result = {};
+thx.core._Result.Result_Impl_ = {};
+thx.core._Result.Result_Impl_.__name__ = true;
+thx.core._Tuple = {};
+thx.core._Tuple.Tuple1_Impl_ = {};
+thx.core._Tuple.Tuple1_Impl_.__name__ = true;
+thx.core._Tuple.Tuple2_Impl_ = {};
+thx.core._Tuple.Tuple2_Impl_.__name__ = true;
 thx.promise = {};
 thx.promise.Future = function() {
 	this.handlers = [];
@@ -400,8 +416,9 @@ thx.promise.Future.prototype = {
 				break;
 			case 0:
 				var result = _g[2];
-				var handler;
-				while(null != (handler = this.handlers.shift())) handler(result);
+				var index = -1;
+				while(++index < this.handlers.length) this.handlers[index](result);
+				this.handlers = [];
 				break;
 			}
 		}
