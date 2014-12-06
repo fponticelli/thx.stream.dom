@@ -78,6 +78,15 @@ class Dom {
   public static function subscribeToggleClass(el : Element, name : String) : Bool -> Void
     return function(on) if(on) el.classList.add(name) else el.classList.remove(name);
 
+  public static function subscribeSwapClass(el : Element, nameOn : String, nameOff : String) : Bool -> Void
+    return function(on) if(on) {
+        el.classList.add(nameOn);
+        el.classList.remove(nameOff);
+      } else {
+        el.classList.add(nameOff);
+        el.classList.remove(nameOn);
+      };
+
   public static function subscribeToggleVisibility(el : Element) : Bool -> Void {
     var originalDisplay = el.style.display;
     if(originalDisplay == 'none')
