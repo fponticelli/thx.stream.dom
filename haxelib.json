@@ -5,8 +5,8 @@
   "classPath": "src",
   "tags": ["thx", "stream", "async", "javascript"],
   "description": "DOM Streams for Haxe",
-  "releasenote": "Improved documentation",
-  "version": "0.1.1",
+  "releasenote": "Added subrscribeSwapClass",
+  "version": "0.1.2",
   "contributors": ["fponticelli"],
   "dependencies": {
     "thx.core": "",
