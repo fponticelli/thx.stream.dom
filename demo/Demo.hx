@@ -1,6 +1,10 @@
 import js.Browser;
 import js.html.CanvasElement;
-import js.html.*;
+import js.html.DOMElement as Element;
+import js.html.DivElement;
+import js.html.PreElement;
+import js.html.ButtonElement;
+import js.html.InputElement;
 
 using thx.stream.dom.Dom;
 

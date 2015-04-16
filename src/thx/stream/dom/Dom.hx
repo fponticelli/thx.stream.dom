@@ -1,7 +1,11 @@
 package thx.stream.dom;
 
 using StringTools;
-import js.html.*;
+import js.html.DOMElement as Element;
+import js.html.MouseEvent;
+import js.html.KeyboardEvent;
+import js.html.InputElement;
+import js.html.Event;
 using thx.core.Nil;
 using thx.stream.Emitter;
 using thx.promise.Promise;
