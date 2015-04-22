@@ -6,7 +6,7 @@ import js.html.MouseEvent;
 import js.html.KeyboardEvent;
 import js.html.InputElement;
 import js.html.Event;
-using thx.core.Nil;
+using thx.Nil;
 using thx.stream.Emitter;
 using thx.promise.Promise;
 

@@ -1,5 +1,5 @@
-(function () { "use strict";
-var console = (1,eval)('this').console || {log:function(){}};
+(function (console) { "use strict";
+var $estr = function() { return js_Boot.__string_rec(this,''); };
 function $extend(from, fields) {
 	function Inherit() {} Inherit.prototype = from; var proto = new Inherit();
 	for (var name in fields) proto[name] = fields[name];
@@ -13,50 +13,50 @@ Demo.__name__ = true;
 Demo.mouseMove = function(demo) {
 	var el = demo.panel("mouse move","container\n  .streamMouseMove()\n  .pluck('x: ${_.clientX}, y: ${_.clientY}')\n  .subscribe(output.subscribeText());");
 	var output = demo.output(el);
-	thx.stream.dom.Dom.streamEvent(demo.container,"mousemove",false).map(function(_) {
+	thx_stream_dom_Dom.streamEvent(demo.container,"mousemove",false).map(function(_) {
 		return "x: " + _.clientX + ", y: " + _.clientY;
-	}).subscribe(thx.stream.dom.Dom.subscribeText(output));
+	}).subscribe(thx_stream_dom_Dom.subscribeText(output));
 };
 Demo.click = function(demo) {
 	var el = demo.panel("click count","click\n  .streamClick()\n  .reduce(0, function(acc, _) return acc + 1)\n  .pluck('clicks: $_')\n  .subscribe(output.subscribeText());");
 	var click = demo.button("click",el);
 	var output = demo.output(el);
-	thx.stream.dom.Dom.streamEvent(click,"click",false).reduce(0,function(acc,_) {
+	thx_stream_dom_Dom.streamEvent(click,"click",false).reduce(0,function(acc,_) {
 		return acc + 1;
 	}).map(function(_1) {
 		return "clicks: " + _1;
-	}).subscribe(thx.stream.dom.Dom.subscribeText(output));
+	}).subscribe(thx_stream_dom_Dom.subscribeText(output));
 };
 Demo.plusMinus = function(demo) {
 	var el = demo.panel("plus & minus","plus\n  .streamClick()\n  .toValue(1)\n  .merge(\n    minus\n      .streamClick()\n      .toValue(-1)\n  )\n  .reduce(0, function(acc, v) return acc + v)\n  .pluck('count: $_')\n  .subscribe(output.subscribeText());");
 	var plus = demo.button("+",el);
 	var minus = demo.button("-",el);
 	var output = demo.output(el);
-	thx.stream.dom.Dom.streamEvent(plus,"click",false).toValue(1).merge(thx.stream.dom.Dom.streamEvent(minus,"click",false).toValue(-1)).reduce(0,function(acc,v) {
+	thx_stream_dom_Dom.streamEvent(plus,"click",false).toValue(1).merge(thx_stream_dom_Dom.streamEvent(minus,"click",false).toValue(-1)).reduce(0,function(acc,v) {
 		return acc + v;
 	}).map(function(_) {
 		return "count: " + _;
-	}).subscribe(thx.stream.dom.Dom.subscribeText(output));
+	}).subscribe(thx_stream_dom_Dom.subscribeText(output));
 };
 Demo.replicate = function(demo) {
 	var el = demo.panel("replicate text","input\n  .streamInput()\n  .pluck(_.toUpperCase())\n  .subscribe(output.subscribeText());");
 	var input = demo.input("type text",el);
 	var output = demo.output(el);
-	thx.stream.dom.Dom.streamInput(input,null).map(function(_) {
+	thx_stream_dom_Dom.streamInput(input,null).map(function(_) {
 		return _.toUpperCase();
-	}).subscribe(thx.stream.dom.Dom.subscribeText(output));
+	}).subscribe(thx_stream_dom_Dom.subscribeText(output));
 };
 Demo.draw = function(demo) {
 	var el = demo.panel("draw canvas","canvas.streamMouseMove()\n  .map(function(e) {\n    var bb = canvas.getBoundingClientRect();\n    return { x : e.clientX - bb.left, y : e.clientY - bb.top };\n  })\n  .window(2)\n  .pair(canvas\n    .streamMouseDown()\n    .toTrue()\n    .merge(canvas.streamMouseUp().toFalse()))\n  .filterPluck(_._1)\n  .pluck(_._0)\n  .subscribe(function(e) {\n    ctx.beginPath();\n    ctx.moveTo(e[0].x, e[0].y);\n    ctx.lineTo(e[1].x, e[1].y);\n    ctx.stroke();\n  });");
 	var canvas = demo.canvas(470,240,el);
-	var ctx = canvas.getContext("2d");
+	var ctx = canvas.getContext("2d",null);
 	ctx.lineWidth = 4;
 	ctx.strokeStyle = "#345";
 	ctx.lineCap = "round";
-	thx.stream.dom.Dom.streamEvent(canvas,"mousemove",false).map(function(e) {
+	thx_stream_dom_Dom.streamEvent(canvas,"mousemove",false).map(function(e) {
 		var bb = canvas.getBoundingClientRect();
 		return { x : e.clientX - bb.left, y : e.clientY - bb.top};
-	}).window(2).pair(thx.stream.dom.Dom.streamEvent(canvas,"mousedown",false).toTrue().merge(thx.stream.dom.Dom.streamEvent(canvas,"mouseup",false).toFalse())).filter(function(_) {
+	}).window(2).pair(thx_stream_dom_Dom.streamEvent(canvas,"mousedown",false).toTrue().merge(thx_stream_dom_Dom.streamEvent(canvas,"mouseup",false).toFalse())).filter(function(_) {
 		return _._1;
 	}).map(function(_1) {
 		return _1._0;
@@ -137,8 +137,29 @@ Demo.prototype = {
 		container.appendChild(el);
 	}
 };
+var EReg = function(r,opt) {
+	opt = opt.split("u").join("");
+	this.r = new RegExp(r,opt);
+};
+EReg.__name__ = true;
+EReg.prototype = {
+	match: function(s) {
+		if(this.r.global) this.r.lastIndex = 0;
+		this.r.m = this.r.exec(s);
+		this.r.s = s;
+		return this.r.m != null;
+	}
+	,matched: function(n) {
+		if(this.r.m != null && n >= 0 && n < this.r.m.length) return this.r.m[n]; else throw new js__$Boot_HaxeError("EReg::matched");
+	}
+};
 var HxOverrides = function() { };
 HxOverrides.__name__ = true;
+HxOverrides.cca = function(s,index) {
+	var x = s.charCodeAt(index);
+	if(x != x) return undefined;
+	return x;
+};
 HxOverrides.substr = function(s,pos,len) {
 	if(pos != null && pos != 0 && len != null && len < 0) return "";
 	if(len == null) len = s.length;
@@ -148,26 +169,55 @@ HxOverrides.substr = function(s,pos,len) {
 	} else if(len < 0) len = s.length + len - pos;
 	return s.substr(pos,len);
 };
+Math.__name__ = true;
 var Std = function() { };
 Std.__name__ = true;
 Std.string = function(s) {
-	return js.Boot.__string_rec(s,"");
+	return js_Boot.__string_rec(s,"");
+};
+Std.parseInt = function(x) {
+	var v = parseInt(x,10);
+	if(v == 0 && (HxOverrides.cca(x,1) == 120 || HxOverrides.cca(x,1) == 88)) v = parseInt(x);
+	if(isNaN(v)) return null;
+	return v;
 };
 var StringBuf = function() {
 	this.b = "";
 };
 StringBuf.__name__ = true;
-var haxe = {};
-haxe.StackItem = { __ename__ : true, __constructs__ : ["CFunction","Module","FilePos","Method","LocalFunction"] };
-haxe.StackItem.CFunction = ["CFunction",0];
-haxe.StackItem.CFunction.__enum__ = haxe.StackItem;
-haxe.StackItem.Module = function(m) { var $x = ["Module",1,m]; $x.__enum__ = haxe.StackItem; return $x; };
-haxe.StackItem.FilePos = function(s,file,line) { var $x = ["FilePos",2,s,file,line]; $x.__enum__ = haxe.StackItem; return $x; };
-haxe.StackItem.Method = function(classname,method) { var $x = ["Method",3,classname,method]; $x.__enum__ = haxe.StackItem; return $x; };
-haxe.StackItem.LocalFunction = function(v) { var $x = ["LocalFunction",4,v]; $x.__enum__ = haxe.StackItem; return $x; };
-haxe.CallStack = function() { };
-haxe.CallStack.__name__ = true;
-haxe.CallStack.callStack = function() {
+var StringTools = function() { };
+StringTools.__name__ = true;
+StringTools.isSpace = function(s,pos) {
+	var c = HxOverrides.cca(s,pos);
+	return c > 8 && c < 14 || c == 32;
+};
+StringTools.ltrim = function(s) {
+	var l = s.length;
+	var r = 0;
+	while(r < l && StringTools.isSpace(s,r)) r++;
+	if(r > 0) return HxOverrides.substr(s,r,l - r); else return s;
+};
+StringTools.rtrim = function(s) {
+	var l = s.length;
+	var r = 0;
+	while(r < l && StringTools.isSpace(s,l - r - 1)) r++;
+	if(r > 0) return HxOverrides.substr(s,0,l - r); else return s;
+};
+StringTools.trim = function(s) {
+	return StringTools.ltrim(StringTools.rtrim(s));
+};
+var haxe_StackItem = { __ename__ : true, __constructs__ : ["CFunction","Module","FilePos","Method","LocalFunction"] };
+haxe_StackItem.CFunction = ["CFunction",0];
+haxe_StackItem.CFunction.toString = $estr;
+haxe_StackItem.CFunction.__enum__ = haxe_StackItem;
+haxe_StackItem.Module = function(m) { var $x = ["Module",1,m]; $x.__enum__ = haxe_StackItem; $x.toString = $estr; return $x; };
+haxe_StackItem.FilePos = function(s,file,line) { var $x = ["FilePos",2,s,file,line]; $x.__enum__ = haxe_StackItem; $x.toString = $estr; return $x; };
+haxe_StackItem.Method = function(classname,method) { var $x = ["Method",3,classname,method]; $x.__enum__ = haxe_StackItem; $x.toString = $estr; return $x; };
+haxe_StackItem.LocalFunction = function(v) { var $x = ["LocalFunction",4,v]; $x.__enum__ = haxe_StackItem; $x.toString = $estr; return $x; };
+var haxe_CallStack = function() { };
+haxe_CallStack.__name__ = true;
+haxe_CallStack.getStack = function(e) {
+	if(e == null) return [];
 	var oldValue = Error.prepareStackTrace;
 	Error.prepareStackTrace = function(error,callsites) {
 		var stack = [];
@@ -175,6 +225,7 @@ haxe.CallStack.callStack = function() {
 		while(_g < callsites.length) {
 			var site = callsites[_g];
 			++_g;
+			if(haxe_CallStack.wrapCallSite != null) site = haxe_CallStack.wrapCallSite(site);
 			var method = null;
 			var fullName = site.getFunctionName();
 			if(fullName != null) {
@@ -182,33 +233,43 @@ haxe.CallStack.callStack = function() {
 				if(idx >= 0) {
 					var className = HxOverrides.substr(fullName,0,idx);
 					var methodName = HxOverrides.substr(fullName,idx + 1,null);
-					method = haxe.StackItem.Method(className,methodName);
+					method = haxe_StackItem.Method(className,methodName);
 				}
 			}
-			stack.push(haxe.StackItem.FilePos(method,site.getFileName(),site.getLineNumber()));
+			stack.push(haxe_StackItem.FilePos(method,site.getFileName(),site.getLineNumber()));
 		}
 		return stack;
 	};
-	var a = haxe.CallStack.makeStack(new Error().stack);
-	a.shift();
+	var a = haxe_CallStack.makeStack(e.stack);
 	Error.prepareStackTrace = oldValue;
 	return a;
 };
-haxe.CallStack.exceptionStack = function() {
-	return [];
+haxe_CallStack.callStack = function() {
+	try {
+		throw new Error();
+	} catch( e ) {
+		haxe_CallStack.lastException = e;
+		if (e instanceof js__$Boot_HaxeError) e = e.val;
+		var a = haxe_CallStack.getStack(e);
+		a.shift();
+		return a;
+	}
 };
-haxe.CallStack.toString = function(stack) {
+haxe_CallStack.exceptionStack = function() {
+	return haxe_CallStack.getStack(haxe_CallStack.lastException);
+};
+haxe_CallStack.toString = function(stack) {
 	var b = new StringBuf();
 	var _g = 0;
 	while(_g < stack.length) {
 		var s = stack[_g];
 		++_g;
 		b.b += "\nCalled from ";
-		haxe.CallStack.itemToString(b,s);
+		haxe_CallStack.itemToString(b,s);
 	}
 	return b.b;
 };
-haxe.CallStack.itemToString = function(b,s) {
+haxe_CallStack.itemToString = function(b,s) {
 	switch(s[1]) {
 	case 0:
 		b.b += "a C function";
@@ -223,7 +284,7 @@ haxe.CallStack.itemToString = function(b,s) {
 		var file = s[3];
 		var s1 = s[2];
 		if(s1 != null) {
-			haxe.CallStack.itemToString(b,s1);
+			haxe_CallStack.itemToString(b,s1);
 			b.b += " (";
 		}
 		if(file == null) b.b += "null"; else b.b += "" + file;
@@ -245,28 +306,45 @@ haxe.CallStack.itemToString = function(b,s) {
 		break;
 	}
 };
-haxe.CallStack.makeStack = function(s) {
-	if(typeof(s) == "string") {
+haxe_CallStack.makeStack = function(s) {
+	if(s == null) return []; else if(typeof(s) == "string") {
 		var stack = s.split("\n");
+		if(stack[0] == "Error") stack.shift();
 		var m = [];
+		var rie10 = new EReg("^   at ([A-Za-z0-9_. ]+) \\(([^)]+):([0-9]+):([0-9]+)\\)$","");
 		var _g = 0;
 		while(_g < stack.length) {
 			var line = stack[_g];
 			++_g;
-			m.push(haxe.StackItem.Module(line));
+			if(rie10.match(line)) {
+				var path = rie10.matched(1).split(".");
+				var meth = path.pop();
+				var file = rie10.matched(2);
+				var line1 = Std.parseInt(rie10.matched(3));
+				m.push(haxe_StackItem.FilePos(meth == "Anonymous function"?haxe_StackItem.LocalFunction():meth == "Global code"?null:haxe_StackItem.Method(path.join("."),meth),file,line1));
+			} else m.push(haxe_StackItem.Module(StringTools.trim(line)));
 		}
 		return m;
 	} else return s;
 };
-haxe.ds = {};
-haxe.ds.Option = { __ename__ : true, __constructs__ : ["Some","None"] };
-haxe.ds.Option.Some = function(v) { var $x = ["Some",0,v]; $x.__enum__ = haxe.ds.Option; return $x; };
-haxe.ds.Option.None = ["None",1];
-haxe.ds.Option.None.__enum__ = haxe.ds.Option;
-var js = {};
-js.Boot = function() { };
-js.Boot.__name__ = true;
-js.Boot.__string_rec = function(o,s) {
+var haxe_ds_Option = { __ename__ : true, __constructs__ : ["Some","None"] };
+haxe_ds_Option.Some = function(v) { var $x = ["Some",0,v]; $x.__enum__ = haxe_ds_Option; $x.toString = $estr; return $x; };
+haxe_ds_Option.None = ["None",1];
+haxe_ds_Option.None.toString = $estr;
+haxe_ds_Option.None.__enum__ = haxe_ds_Option;
+var js__$Boot_HaxeError = function(val) {
+	Error.call(this);
+	this.val = val;
+	this.message = String(val);
+	if(Error.captureStackTrace) Error.captureStackTrace(this,js__$Boot_HaxeError);
+};
+js__$Boot_HaxeError.__name__ = true;
+js__$Boot_HaxeError.__super__ = Error;
+js__$Boot_HaxeError.prototype = $extend(Error.prototype,{
+});
+var js_Boot = function() { };
+js_Boot.__name__ = true;
+js_Boot.__string_rec = function(o,s) {
 	if(o == null) return "null";
 	if(s.length >= 5) return "<...>";
 	var t = typeof(o);
@@ -282,7 +360,7 @@ js.Boot.__string_rec = function(o,s) {
 				var _g = o.length;
 				while(_g1 < _g) {
 					var i1 = _g1++;
-					if(i1 != 2) str2 += "," + js.Boot.__string_rec(o[i1],s); else str2 += js.Boot.__string_rec(o[i1],s);
+					if(i1 != 2) str2 += "," + js_Boot.__string_rec(o[i1],s); else str2 += js_Boot.__string_rec(o[i1],s);
 				}
 				return str2 + ")";
 			}
@@ -293,7 +371,7 @@ js.Boot.__string_rec = function(o,s) {
 			var _g2 = 0;
 			while(_g2 < l) {
 				var i2 = _g2++;
-				str1 += (i2 > 0?",":"") + js.Boot.__string_rec(o[i2],s);
+				str1 += (i2 > 0?",":"") + js_Boot.__string_rec(o[i2],s);
 			}
 			str1 += "]";
 			return str1;
@@ -302,9 +380,11 @@ js.Boot.__string_rec = function(o,s) {
 		try {
 			tostr = o.toString;
 		} catch( e ) {
+			haxe_CallStack.lastException = e;
+			if (e instanceof js__$Boot_HaxeError) e = e.val;
 			return "???";
 		}
-		if(tostr != null && tostr != Object.toString) {
+		if(tostr != null && tostr != Object.toString && typeof(tostr) == "function") {
 			var s2 = o.toString();
 			if(s2 != "[object Object]") return s2;
 		}
@@ -320,7 +400,7 @@ js.Boot.__string_rec = function(o,s) {
 			continue;
 		}
 		if(str.length != 2) str += ", \n";
-		str += s + k + " : " + js.Boot.__string_rec(o[k],s);
+		str += s + k + " : " + js_Boot.__string_rec(o[k],s);
 		}
 		s = s.substring(1);
 		str += "\n" + s + "}";
@@ -333,60 +413,51 @@ js.Boot.__string_rec = function(o,s) {
 		return String(o);
 	}
 };
-js.Browser = function() { };
-js.Browser.__name__ = true;
-var thx = {};
-thx.core = {};
-thx.core.Error = function(message,stack,pos) {
+var thx_Error = function(message,stack,pos) {
 	Error.call(this,message);
 	this.message = message;
 	if(null == stack) {
 		try {
-			stack = haxe.CallStack.exceptionStack();
+			stack = haxe_CallStack.exceptionStack();
 		} catch( e ) {
+			haxe_CallStack.lastException = e;
+			if (e instanceof js__$Boot_HaxeError) e = e.val;
 			stack = [];
 		}
 		if(stack.length == 0) try {
-			stack = haxe.CallStack.callStack();
+			stack = haxe_CallStack.callStack();
 		} catch( e1 ) {
+			haxe_CallStack.lastException = e1;
+			if (e1 instanceof js__$Boot_HaxeError) e1 = e1.val;
 			stack = [];
 		}
 	}
 	this.stackItems = stack;
 	this.pos = pos;
 };
-thx.core.Error.__name__ = true;
-thx.core.Error.__super__ = Error;
-thx.core.Error.prototype = $extend(Error.prototype,{
+thx_Error.__name__ = true;
+thx_Error.__super__ = Error;
+thx_Error.prototype = $extend(Error.prototype,{
 	toString: function() {
-		return this.message + "\nfrom: " + this.pos.className + "." + this.pos.methodName + "() at " + this.pos.lineNumber + "\n\n" + haxe.CallStack.toString(this.stackItems);
+		return this.message + "\nfrom: " + this.pos.className + "." + this.pos.methodName + "() at " + this.pos.lineNumber + "\n\n" + haxe_CallStack.toString(this.stackItems);
 	}
 });
-thx.core._Result = {};
-thx.core._Result.Result_Impl_ = {};
-thx.core._Result.Result_Impl_.__name__ = true;
-thx.core._Tuple = {};
-thx.core._Tuple.Tuple1_Impl_ = {};
-thx.core._Tuple.Tuple1_Impl_.__name__ = true;
-thx.core._Tuple.Tuple2_Impl_ = {};
-thx.core._Tuple.Tuple2_Impl_.__name__ = true;
-thx.promise = {};
-thx.promise.Future = function() {
+var thx_promise_Future = function() {
 	this.handlers = [];
-	this.state = haxe.ds.Option.None;
+	this.state = haxe_ds_Option.None;
 };
-thx.promise.Future.__name__ = true;
-thx.promise.Future.create = function(handler) {
-	var future = new thx.promise.Future();
+thx_promise_Future.__name__ = true;
+thx_promise_Future.create = function(handler) {
+	var future = new thx_promise_Future();
 	handler($bind(future,future.setState));
 	return future;
 };
-thx.promise.Future.value = function(v) {
-	return thx.promise.Future.create(function(callback) {
+thx_promise_Future.value = function(v) {
+	return thx_promise_Future.create(function(callback) {
 		callback(v);
 	});
 };
-thx.promise.Future.prototype = {
+thx_promise_Future.prototype = {
 	then: function(handler) {
 		this.handlers.push(handler);
 		this.update();
@@ -397,11 +468,11 @@ thx.promise.Future.prototype = {
 			var _g = this.state;
 			switch(_g[1]) {
 			case 1:
-				this.state = haxe.ds.Option.Some(newstate);
+				this.state = haxe_ds_Option.Some(newstate);
 				break;
 			case 0:
 				var r = _g[2];
-				throw new thx.core.Error("future was already \"" + Std.string(r) + "\", can't apply the new state \"" + Std.string(newstate) + "\"",null,{ fileName : "Future.hx", lineNumber : 85, className : "thx.promise.Future", methodName : "setState"});
+				throw new thx_Error("future was already \"" + Std.string(r) + "\", can't apply the new state \"" + Std.string(newstate) + "\"",null,{ fileName : "Future.hx", lineNumber : 108, className : "thx.promise.Future", methodName : "setState"});
 				break;
 			}
 		}
@@ -424,18 +495,17 @@ thx.promise.Future.prototype = {
 		}
 	}
 };
-thx.stream = {};
-thx.stream.Emitter = function(init) {
+var thx_stream_Emitter = function(init) {
 	this.init = init;
 };
-thx.stream.Emitter.__name__ = true;
-thx.stream.Emitter.prototype = {
+thx_stream_Emitter.__name__ = true;
+thx_stream_Emitter.prototype = {
 	subscribe: function(pulse,end) {
 		if(null != pulse) pulse = pulse; else pulse = function(_) {
 		};
 		if(null != end) end = end; else end = function(_1) {
 		};
-		var stream = new thx.stream.Stream(function(r) {
+		var stream = new thx_stream_Stream(function(r) {
 			switch(r[1]) {
 			case 0:
 				var v = r[2];
@@ -452,15 +522,15 @@ thx.stream.Emitter.prototype = {
 	}
 	,merge: function(other) {
 		var _g = this;
-		return new thx.stream.Emitter(function(stream) {
+		return new thx_stream_Emitter(function(stream) {
 			_g.init(stream);
 			other.init(stream);
 		});
 	}
 	,reduce: function(acc,f) {
 		var _g = this;
-		return new thx.stream.Emitter(function(stream) {
-			_g.init(new thx.stream.Stream(function(r) {
+		return new thx_stream_Emitter(function(stream) {
+			_g.init(new thx_stream_Stream(function(r) {
 				switch(r[1]) {
 				case 0:
 					var v = r[2];
@@ -484,13 +554,13 @@ thx.stream.Emitter.prototype = {
 	,window: function(size,emitWithLess) {
 		if(emitWithLess == null) emitWithLess = false;
 		var _g = this;
-		return new thx.stream.Emitter(function(stream) {
+		return new thx_stream_Emitter(function(stream) {
 			var buf = [];
 			var pulse = function() {
 				if(buf.length > size) buf.shift();
 				if(buf.length == size || emitWithLess) stream.pulse(buf.slice());
 			};
-			_g.init(new thx.stream.Stream(function(r) {
+			_g.init(new thx_stream_Stream(function(r) {
 				switch(r[1]) {
 				case 0:
 					var v = r[2];
@@ -511,10 +581,15 @@ thx.stream.Emitter.prototype = {
 			}));
 		});
 	}
+	,map: function(f) {
+		return this.mapFuture(function(v) {
+			return thx_promise_Future.value(f(v));
+		});
+	}
 	,mapFuture: function(f) {
 		var _g = this;
-		return new thx.stream.Emitter(function(stream) {
-			_g.init(new thx.stream.Stream(function(r) {
+		return new thx_stream_Emitter(function(stream) {
+			_g.init(new thx_stream_Stream(function(r) {
 				switch(r[1]) {
 				case 0:
 					var v = r[2];
@@ -534,11 +609,6 @@ thx.stream.Emitter.prototype = {
 			}));
 		});
 	}
-	,map: function(f) {
-		return this.mapFuture(function(v) {
-			return thx.promise.Future.value(f(v));
-		});
-	}
 	,toTrue: function() {
 		return this.map(function(_) {
 			return true;
@@ -554,10 +624,15 @@ thx.stream.Emitter.prototype = {
 			return value;
 		});
 	}
+	,filter: function(f) {
+		return this.filterFuture(function(v) {
+			return thx_promise_Future.value(f(v));
+		});
+	}
 	,filterFuture: function(f) {
 		var _g = this;
-		return new thx.stream.Emitter(function(stream) {
-			_g.init(new thx.stream.Stream(function(r) {
+		return new thx_stream_Emitter(function(stream) {
+			_g.init(new thx_stream_Stream(function(r) {
 				switch(r[1]) {
 				case 0:
 					var v = r[2];
@@ -579,14 +654,9 @@ thx.stream.Emitter.prototype = {
 			}));
 		});
 	}
-	,filter: function(f) {
-		return this.filterFuture(function(v) {
-			return thx.promise.Future.value(f(v));
-		});
-	}
 	,pair: function(other) {
 		var _g = this;
-		return new thx.stream.Emitter(function(stream) {
+		return new thx_stream_Emitter(function(stream) {
 			var _0 = null;
 			var _1 = null;
 			stream.addCleanUp(function() {
@@ -597,7 +667,7 @@ thx.stream.Emitter.prototype = {
 				if(null == _0 || null == _1) return;
 				stream.pulse({ _0 : _0, _1 : _1});
 			};
-			_g.init(new thx.stream.Stream(function(r) {
+			_g.init(new thx_stream_Stream(function(r) {
 				switch(r[1]) {
 				case 0:
 					var v = r[2];
@@ -616,7 +686,7 @@ thx.stream.Emitter.prototype = {
 					break;
 				}
 			}));
-			other.init(new thx.stream.Stream(function(r1) {
+			other.init(new thx_stream_Stream(function(r1) {
 				switch(r1[1]) {
 				case 0:
 					var v1 = r1[2];
@@ -638,29 +708,29 @@ thx.stream.Emitter.prototype = {
 		});
 	}
 };
-thx.stream.IStream = function() { };
-thx.stream.IStream.__name__ = true;
-thx.stream.Stream = function(subscriber) {
+var thx_stream_IStream = function() { };
+thx_stream_IStream.__name__ = true;
+var thx_stream_Stream = function(subscriber) {
 	this.subscriber = subscriber;
 	this.cleanUps = [];
 	this.finalized = false;
 	this.canceled = false;
 };
-thx.stream.Stream.__name__ = true;
-thx.stream.Stream.__interfaces__ = [thx.stream.IStream];
-thx.stream.Stream.prototype = {
+thx_stream_Stream.__name__ = true;
+thx_stream_Stream.__interfaces__ = [thx_stream_IStream];
+thx_stream_Stream.prototype = {
 	addCleanUp: function(f) {
 		this.cleanUps.push(f);
 	}
 	,cancel: function() {
 		this.canceled = true;
-		this.finalize(thx.stream.StreamValue.End(true));
+		this.finalize(thx_stream_StreamValue.End(true));
 	}
 	,end: function() {
-		this.finalize(thx.stream.StreamValue.End(false));
+		this.finalize(thx_stream_StreamValue.End(false));
 	}
 	,pulse: function(v) {
-		this.subscriber(thx.stream.StreamValue.Pulse(v));
+		this.subscriber(thx_stream_StreamValue.Pulse(v));
 	}
 	,finalize: function(signal) {
 		if(this.finalized) return;
@@ -671,28 +741,27 @@ thx.stream.Stream.prototype = {
 		};
 	}
 };
-thx.stream.StreamValue = { __ename__ : true, __constructs__ : ["Pulse","End"] };
-thx.stream.StreamValue.Pulse = function(value) { var $x = ["Pulse",0,value]; $x.__enum__ = thx.stream.StreamValue; return $x; };
-thx.stream.StreamValue.End = function(cancel) { var $x = ["End",1,cancel]; $x.__enum__ = thx.stream.StreamValue; return $x; };
-thx.stream.dom = {};
-thx.stream.dom.Dom = function() { };
-thx.stream.dom.Dom.__name__ = true;
-thx.stream.dom.Dom.streamEvent = function(el,name,capture) {
+var thx_stream_StreamValue = { __ename__ : true, __constructs__ : ["Pulse","End"] };
+thx_stream_StreamValue.Pulse = function(value) { var $x = ["Pulse",0,value]; $x.__enum__ = thx_stream_StreamValue; $x.toString = $estr; return $x; };
+thx_stream_StreamValue.End = function(cancel) { var $x = ["End",1,cancel]; $x.__enum__ = thx_stream_StreamValue; $x.toString = $estr; return $x; };
+var thx_stream_dom_Dom = function() { };
+thx_stream_dom_Dom.__name__ = true;
+thx_stream_dom_Dom.streamEvent = function(el,name,capture) {
 	if(capture == null) capture = false;
-	return new thx.stream.Emitter(function(stream) {
+	return new thx_stream_Emitter(function(stream) {
 		el.addEventListener(name,$bind(stream,stream.pulse),capture);
 		stream.addCleanUp(function() {
 			el.removeEventListener(name,$bind(stream,stream.pulse),capture);
 		});
 	});
 };
-thx.stream.dom.Dom.streamInput = function(el,capture) {
+thx_stream_dom_Dom.streamInput = function(el,capture) {
 	if(capture == null) capture = false;
-	return thx.stream.dom.Dom.streamEvent(el,"input",capture).map(function(_) {
+	return thx_stream_dom_Dom.streamEvent(el,"input",capture).map(function(_) {
 		return el.value;
 	});
 };
-thx.stream.dom.Dom.subscribeText = function(el,force) {
+thx_stream_dom_Dom.subscribeText = function(el,force) {
 	if(force == null) force = false;
 	return function(text) {
 		if(el.textContent != text || force) el.textContent = text;
@@ -703,4 +772,4 @@ function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id
 String.__name__ = true;
 Array.__name__ = true;
 Demo.main();
-})();
+})(typeof console != "undefined" ? console : {log:function(){}});
