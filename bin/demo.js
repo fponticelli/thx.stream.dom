@@ -12,21 +12,21 @@ var Demo = function(container) {
 };
 Demo.__name__ = true;
 Demo.mouseMove = function(demo) {
-	var output = demo.output(demo.panel("mouse move","container\n  .streamMouseMove()\n  .map.fn('x: ${_.clientX}, y: ${_.clientY}')\n  .next(output.setText()).run();"));
+	var output = demo.output(demo.panel("mouse move","container\n  .streamMouseMove()\n  .map.fn('x: ${_.clientX}, y: ${_.clientY}')\n  .next(output.receive()).run();"));
 	thx_stream_dom_Dom.streamEvent(demo.container,"mousemove",false).map(function(_) {
 		return "x: " + _.clientX + ", y: " + _.clientY;
-	}).next(thx_stream_dom_Dom.setText(output)).run();
+	}).next(thx_stream_dom_Dom.receive(output)).run();
 };
 Demo.click = function(demo) {
-	var el = demo.panel("click count","click\n  .streamClick()\n  .count()\n  .map.fn('clicks: $_')\n  .next(output.setText()).run();");
+	var el = demo.panel("click count","click\n  .streamClick()\n  .count()\n  .map.fn('clicks: $_')\n  .next(output.receive()).run();");
 	var click = demo.button("click",el);
 	var output = demo.output(el);
 	thx_stream_StreamExtensions.count(thx_stream_dom_Dom.streamEvent(click,"click",false)).map(function(_) {
 		return "clicks: " + _;
-	}).next(thx_stream_dom_Dom.setText(output)).run();
+	}).next(thx_stream_dom_Dom.receive(output)).run();
 };
 Demo.plusMinus = function(demo) {
-	var el = demo.panel("plus & minus","plus\n  .streamClick().toValue(1)\n  .merge(\n    minus.streamClick().toValue(-1)\n  )\n  .reduce(function(acc, v) return acc + v, 0)\n  .map.fn('count: $_')\n  .next(output.setText()).run();");
+	var el = demo.panel("plus & minus","plus\n  .streamClick().toValue(1)\n  .merge(\n    minus.streamClick().toValue(-1)\n  )\n  .reduce(function(acc, v) return acc + v, 0)\n  .map.fn('count: $_')\n  .next(output.receive()).run();");
 	var plus = demo.button("+",el);
 	var minus = demo.button("-",el);
 	var output = demo.output(el);
@@ -34,10 +34,10 @@ Demo.plusMinus = function(demo) {
 		return acc + v;
 	},0).map(function(_) {
 		return "count: " + _;
-	}).next(thx_stream_dom_Dom.setText(output)).run();
+	}).next(thx_stream_dom_Dom.receive(output)).run();
 };
 Demo.replicate = function(demo) {
-	var el = demo.panel("replicate text","input\n  .streamInput()\n  .map.fn(_.toUpperCase())\n  .next(output.setText()).run();");
+	var el = demo.panel("replicate text","input\n  .streamInput()\n  .map.fn(_.toUpperCase())\n  .next(output.receive()).run();");
 	var input = demo.input("type text",el);
 	var output = demo.output(el);
 	var el1 = input;
@@ -45,10 +45,10 @@ Demo.replicate = function(demo) {
 		return el1.value;
 	}).map(function(_1) {
 		return _1.toUpperCase();
-	}).next(thx_stream_dom_Dom.setText(output)).run();
+	}).next(thx_stream_dom_Dom.receive(output)).run();
 };
 Demo.draw = function(demo) {
-	var canvas = demo.canvas(470,240,demo.panel("draw canvas","canvas.streamMouseMove()\n  .map(function(e) {\n    var bb = canvas.getBoundingClientRect();\n    return { x : e.clientX - bb.left, y : e.clientY - bb.top };\n  })\n  .slidingWindow(2, 2)\n  .pairTo(\n    canvas\n      .streamMouseDown().toTrue()\n      .merge(canvas.streamMouseUp().toFalse())\n  )\n  .filter.fn(_._1)\n  .left()\n  .next(function(e) {\n    ctx.beginPath();\n    ctx.moveTo(e[0].x, e[0].y);\n    ctx.lineTo(e[1].x, e[1].y);\n    ctx.stroke();\n  }).run();"));
+	var canvas = demo.canvas(470,240,demo.panel("draw canvas","canvas.streamMouseMove()\n  .map(function(e) {\n    var bb = canvas.getBoundingClientRect();\n    return { x : e.clientX - bb.left, y : e.clientY - bb.top };\n  })\n  .slidingWindow(2, 2)\n  .pair(\n    canvas\n      .streamMouseDown().toTrue()\n      .merge(canvas.streamMouseUp().toFalse())\n  )\n  .filter.fn(_._1)\n  .left()\n  .next(function(e) {\n    ctx.beginPath();\n    ctx.moveTo(e[0].x, e[0].y);\n    ctx.lineTo(e[1].x, e[1].y);\n    ctx.stroke();\n  }).run();"));
 	var ctx = canvas.getContext("2d",null);
 	ctx.lineWidth = 4;
 	ctx.strokeStyle = "#345";
@@ -56,7 +56,7 @@ Demo.draw = function(demo) {
 	thx_stream_TupleStreamExtensions.left(thx_stream_dom_Dom.streamEvent(canvas,"mousemove",false).map(function(e) {
 		var bb = canvas.getBoundingClientRect();
 		return { x : e.clientX - bb.left, y : e.clientY - bb.top};
-	}).slidingWindow(2,2).pairTo(thx_stream_StreamExtensions.toTrue(thx_stream_dom_Dom.streamEvent(canvas,"mousedown",false)).merge(thx_stream_StreamExtensions.toFalse(thx_stream_dom_Dom.streamEvent(canvas,"mouseup",false)))).filter(function(_) {
+	}).slidingWindow(2,2).pair(thx_stream_StreamExtensions.toTrue(thx_stream_dom_Dom.streamEvent(canvas,"mousedown",false)).merge(thx_stream_StreamExtensions.toFalse(thx_stream_dom_Dom.streamEvent(canvas,"mouseup",false)))).filter(function(_) {
 		return _._1;
 	})).next(function(e1) {
 		ctx.beginPath();
@@ -802,7 +802,7 @@ thx_stream_Stream.prototype = {
 			other.message($bind(o,o.message)).run();
 		});
 	}
-	,pairTo: function(other) {
+	,pair: function(other) {
 		var _gthis = this;
 		return thx_stream_Stream.create(function(o) {
 			var left = haxe_ds_Option.None;
@@ -898,7 +898,7 @@ thx_stream_dom_Dom.streamEvent = function(el,name,capture) {
 		});
 	});
 };
-thx_stream_dom_Dom.setText = function(el,force) {
+thx_stream_dom_Dom.receive = function(el,force) {
 	if(force == null) {
 		force = false;
 	}

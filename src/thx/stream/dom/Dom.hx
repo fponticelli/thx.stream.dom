@@ -61,28 +61,28 @@ class Dom {
   public inline static function streamMouseUp(el : Element, capture = false) : Stream<MouseEvent>
     return streamEvent(el, "mouseup", capture);
 
-  public static function setAttribute<T>(el : Element, name : String) : T -> Void
+  public static function receiveAttribute<T>(el : Element, name : String) : T -> Void
     return function(value : T) if(null == value) el.removeAttribute(name) else el.setAttribute(name, cast value);
 
-  public static function setFocus(el : Element) : Bool -> Void
+  public static function receiveFocus(el : Element) : Bool -> Void
     return function(focus : Bool) if(focus) el.focus() else el.blur();
 
-  public static function setHTML(el : Element) : String -> Void
+  public static function receiveHTML(el : Element) : String -> Void
     return function(html : String) el.innerHTML = html;
 
-  public static function setText(el : Element, force = false) : String -> Void
+  public static function receive(el : Element, force = false) : String -> Void
     return function(text : String) if(el.textContent != text || force) el.textContent = text;
 
-  public static function setToggleAttribute<T>(el : Element, name : String, ?value : T) : Bool -> Void {
+  public static function receiveToggleAttribute<T>(el : Element, name : String, ?value : T) : Bool -> Void {
     if(null == value)
       value = cast el.getAttribute(name);
     return function(on) if(on) el.setAttribute(name, cast value) else el.removeAttribute(name);
   }
 
-  public static function setToggleClass(el : Element, name : String) : Bool -> Void
+  public static function receiveToggleClass(el : Element, name : String) : Bool -> Void
     return function(on) if(on) el.classList.add(name) else el.classList.remove(name);
 
-  public static function setSwapClass(el : Element, nameOn : String, nameOff : String) : Bool -> Void
+  public static function receiveSwapClass(el : Element, nameOn : String, nameOff : String) : Bool -> Void
     return function(on) if(on) {
         el.classList.add(nameOn);
         el.classList.remove(nameOff);
@@ -91,7 +91,7 @@ class Dom {
         el.classList.remove(nameOn);
       };
 
-  public static function setToggleVisibility(el : Element) : Bool -> Void {
+  public static function receiveToggleVisibility(el : Element) : Bool -> Void {
     var originalDisplay = el.style.display;
     if(originalDisplay == 'none')
       originalDisplay = '';

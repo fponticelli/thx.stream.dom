@@ -15,12 +15,12 @@ class Demo {
     var el     = demo.panel('mouse move', "container
   .streamMouseMove()
   .map.fn('x: ${_.clientX}, y: ${_.clientY}')
-  .next(output.setText()).run();"),
+  .next(output.receive()).run();"),
         output = demo.output(el);
     demo.container
       .streamMouseMove()
       .map.fn('x: ${_.clientX}, y: ${_.clientY}')
-      .next(output.setText()).run();
+      .next(output.receive()).run();
   }
 
   public static function click(demo : Demo) {
@@ -28,14 +28,14 @@ class Demo {
   .streamClick()
   .count()
   .map.fn('clicks: $_')
-  .next(output.setText()).run();"),
+  .next(output.receive()).run();"),
         click  = demo.button('click', el),
         output = demo.output(el);
     click
       .streamClick()
       .count()
       .map.fn('clicks: $_')
-      .next(output.setText()).run();
+      .next(output.receive()).run();
   }
 
   public static function plusMinus(demo : Demo) {
@@ -46,7 +46,7 @@ class Demo {
   )
   .reduce(function(acc, v) return acc + v, 0)
   .map.fn('count: $_')
-  .next(output.setText()).run();"),
+  .next(output.receive()).run();"),
         plus   = demo.button('+', el),
         minus  = demo.button('-', el),
         output = demo.output(el);
@@ -57,20 +57,20 @@ class Demo {
       )
       .reduce(function(acc, v) return acc + v, 0)
       .map.fn('count: $_')
-      .next(output.setText()).run();
+      .next(output.receive()).run();
   }
 
   public static function replicate(demo : Demo) {
     var el     = demo.panel('replicate text', "input
   .streamInput()
   .map.fn(_.toUpperCase())
-  .next(output.setText()).run();"),
+  .next(output.receive()).run();"),
         input  = demo.input('type text', el),
         output = demo.output(el);
     input
       .streamInput()
       .map.fn(_.toUpperCase())
-      .next(output.setText()).run();
+      .next(output.receive()).run();
   }
 
   public static function draw(demo : Demo) {
