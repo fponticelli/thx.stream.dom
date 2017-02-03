@@ -12,7 +12,7 @@ using thx.stream.StreamExtensions;
 
 class Demo {
   public static function mouseMove(demo : Demo) {
-    var el     = demo.panel('mouse move', "container
+    var el = demo.panel('mouse move', "container
   .streamMouseMove()
   .map.fn('x: ${_.clientX}, y: ${_.clientY}')
   .next(output.receive()).run();"),
@@ -24,7 +24,7 @@ class Demo {
   }
 
   public static function click(demo : Demo) {
-    var el     = demo.panel('click count', "click
+    var el = demo.panel('click count', "click
   .streamClick()
   .count()
   .map.fn('clicks: $_')
@@ -39,7 +39,7 @@ class Demo {
   }
 
   public static function plusMinus(demo : Demo) {
-    var el     = demo.panel('plus & minus', "plus
+    var el = demo.panel('plus & minus', "plus
   .streamClick().toValue(1)
   .merge(
     minus.streamClick().toValue(-1)
@@ -61,7 +61,7 @@ class Demo {
   }
 
   public static function replicate(demo : Demo) {
-    var el     = demo.panel('replicate text', "input
+    var el = demo.panel('replicate text', "input
   .streamInput()
   .map.fn(_.toUpperCase())
   .next(output.receive()).run();"),
@@ -123,7 +123,6 @@ class Demo {
 
   public static function main() {
     var demo = new Demo(Browser.document.getElementById('container'));
-
     mouseMove(demo);
     click(demo);
     plusMinus(demo);
@@ -137,8 +136,8 @@ class Demo {
   }
 
   public function panel(label : String, ?code : String, ?container : Element) : DivElement {
-    var panel   = div("panel", container),
-        h2      = h2(label, panel);
+    var panel = div("panel", container),
+        h2 = h2(label, panel);
     if(null != code)
       pre(code, panel);
     return div(panel);

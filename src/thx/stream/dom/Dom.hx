@@ -8,7 +8,6 @@ import js.html.InputElement;
 import js.html.Event;
 using thx.Nil;
 using thx.stream.Stream;
-using thx.stream.StreamExtensions;
 using thx.promise.Promise;
 
 class Dom {
@@ -23,9 +22,10 @@ class Dom {
     return streamMouseEvent(el, 'click', capture);
 
   public static function streamEvent<TEvent : Event>(el : Element, name : String, capture = false) : Stream<TEvent>
-    return Stream.cancellable(function(o, addCancel) {
-      el.addEventListener(name, o.next, capture);
-      addCancel(function() el.removeEventListener(name, o.next, capture));
+    return Stream.cancellable(function(o: Subject<TEvent>, addCancel) {
+      var f = function(e: TEvent) o.message(Next(e));
+      el.addEventListener(name, f, capture);
+      addCancel(function() el.removeEventListener(name, f, capture));
     });
 
   public static function streamFocus(el : Element, capture = false) : Stream<Bool>
@@ -35,8 +35,8 @@ class Dom {
     if(!name.startsWith('key'))
       name = 'key$name';
     return Stream.cancellable(function(stream, addCancel) {
-      el.addEventListener(name, stream.next, capture);
-      addCancel(function() el.removeEventListener(name, stream.next, capture));
+      el.addEventListener(name, stream.message, capture);
+      addCancel(function() el.removeEventListener(name, stream.message, capture));
     });
   }
 
